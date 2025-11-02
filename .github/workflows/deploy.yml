@@ -47,6 +47,12 @@ jobs:
       - name: Generate assets
         run: pnpm run build
 
+      - name: Verify assets exist
+        run: |
+          ls -la src/*.png src/*.svg
+          test -f src/og-image.png || exit 1
+          echo "✓ All assets generated successfully"
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
