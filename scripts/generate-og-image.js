@@ -13,7 +13,7 @@ async function generateOgImage() {
 
   await page.waitForTimeout(500);
 
-  const pngPath = resolve("src/public/og-image.png");
+  const pngPath = resolve("src/og-image.png");
   await page.screenshot({
     path: pngPath,
     type: "png",

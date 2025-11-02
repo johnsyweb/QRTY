@@ -6,7 +6,7 @@ async function generateIcons() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  const svgPath = join(process.cwd(), "src/public/icon.svg");
+  const svgPath = join(process.cwd(), "src/icon.svg");
   const svgContent = readFileSync(svgPath, "utf-8");
 
   const sizes = [
@@ -40,7 +40,7 @@ async function generateIcons() {
       omitBackground: false,
     });
 
-    const outputPath = join(process.cwd(), "src/public", name);
+    const outputPath = join(process.cwd(), "src", name);
     writeFileSync(outputPath, screenshot);
     console.log(`✓ Generated ${name} (${size}x${size})`);
   }

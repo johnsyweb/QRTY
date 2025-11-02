@@ -5,7 +5,7 @@ const QRCode = require("qrcode");
 async function generateQRCode() {
   try {
     const url = "https://johnsy.com/qrty/";
-    const outputPath = resolve("src/public/qr-code.png");
+    const outputPath = resolve("src/qr-code.png");
 
     await QRCode.toFile(outputPath, url, {
       width: 512,
