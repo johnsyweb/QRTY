@@ -1,4 +1,3 @@
-const { chromium } = require("playwright");
 const { resolve } = require("path");
 const QRCode = require("qrcode");
 

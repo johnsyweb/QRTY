@@ -51,7 +51,7 @@ pnpm install
 
 ## Usage
 
-The application is a web app hosted at `johnsy.com/qrty/`. To use it:
+The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 
 1. Click "Capture Screen" to start screen capture (you'll be prompted to select what to share)
 2. QR codes will be automatically detected from the captured screen
@@ -94,10 +94,10 @@ The app is set up for automatic deployment to GitHub Pages:
 
 ### Manual Deployment
 
-To manually deploy to `johnsy.com/qrty/`:
+To manually deploy to `johnsy.com/QRTY/`:
 
 1. Generate assets: `pnpm run build`
-2. Upload the contents of the `src/` directory to the web server at `/qrty/`
+2. Upload the contents of the `src/` directory to the web server at `/QRTY/`
 3. Ensure the `.nojekyll` file is included (prevents Jekyll processing on GitHub Pages)
 
 The app uses only static files (HTML, CSS, JavaScript) and a CDN-hosted library (jsQR), so no server-side processing is required.
