@@ -1,0 +1,36 @@
+{
+  "name": "qrty",
+  "version": "2.0.0",
+  "description": "QR code decoder using screen capture or file upload",
+  "scripts": {
+    "start": "node scripts/dev-server.js",
+    "test": "jest",
+    "lint": "eslint src/**/*.js",
+    "format": "prettier --write \"src/**/*.{js,html,css}\" \"scripts/**/*.js\"",
+    "type-check": "tsc --noEmit",
+    "generate:icons": "node scripts/generate-icons.js",
+    "generate:og-image": "node scripts/generate-og-image.js",
+    "generate:qr-code": "node scripts/generate-qr-code.js",
+    "generate:all": "pnpm run generate:icons && pnpm run generate:og-image && pnpm run generate:qr-code",
+    "build": "pnpm run generate:all"
+  },
+  "keywords": [
+    "qr",
+    "qr-code",
+    "decoder",
+    "scanner"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "http-server": "^14.1.1",
+    "playwright": "^1.56.1",
+    "prettier": "^3.2.5",
+    "qrcode": "^1.5.4",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "jsqr": "^1.4.0"
+  }
+}

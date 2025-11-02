@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QRTY - QR Code Decoder | Scan QR Codes from Your Screen</title>
+    <meta
+      name="description"
+      content="Free QR code decoder. Capture a section of your screen to scan QR codes automatically, or upload an image. All processing happens in your browser—no data is sent to servers. Privacy-focused and open source."
+    />
+    <meta
+      name="keywords"
+      content="qr code decoder, qr code scanner, qr code reader, screen capture qr, privacy qr scanner, browser qr decoder"
+    />
+    <meta name="author" content="johnsy.com" />
+    <link rel="canonical" href="https://johnsy.com/qrty/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://johnsy.com/qrty/" />
+    <meta property="og:title" content="QRTY - QR Code Decoder" />
+    <meta
+      property="og:description"
+      content="Free QR code decoder. Capture your screen or upload an image to scan QR codes. All processing happens locally in your browser."
+    />
+    <meta property="og:image" content="https://johnsy.com/qrty/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="QRTY QR Code Decoder interface showing screen capture and QR code scanning"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/qrty/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/qrty/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/qrty/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/qrty/icon-192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="/qrty/icon-512.png"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="QRTY" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header id="header">
+      <h1><a href="/qrty/">QRTY</a></h1>
+      <p>
+        QR Code Decoder. Capture a section of your screen to scan QR codes, or
+        upload an image.
+      </p>
+    </header>
+
+    <div id="page">
+      <main class="container">
+        <div id="instructions" class="instructions">
+          <p>
+            Capture a section of your screen to scan QR codes, or upload an
+            image file containing a QR code. The interface stays minimal so you
+            can easily scan QR codes from your desktop.
+          </p>
+          <p>
+            <strong>Screen capture:</strong> Clicking "Capture Screen" will
+            request permission to capture your screen or a window. QR codes will
+            be automatically detected from the captured screen.
+          </p>
+          <p class="privacy-notice">
+            <strong>Privacy:</strong> All QR code processing happens entirely in
+            your browser. No images, videos, or data are sent to any server or
+            stored anywhere. Your privacy is protected.
+          </p>
+        </div>
+
+        <div class="control-group">
+          <button id="capture-btn" class="capture-btn" tabindex="0">
+            Capture Screen
+          </button>
+          <label for="file-input" class="file-input-label" tabindex="0">
+            Upload Image
+          </label>
+          <input type="file" id="file-input" accept="image/*" />
+        </div>
+
+        <div id="video-container" class="hidden">
+          <video id="video-preview" autoplay playsinline></video>
+          <canvas id="canvas-preview"></canvas>
+          <div class="control-group">
+            <p class="scanning-status">Scanning for QR codes...</p>
+            <button
+              id="stop-capture-btn"
+              class="action-btn secondary"
+              tabindex="0"
+            >
+              Stop Capture
+            </button>
+          </div>
+        </div>
+
+        <div id="result-container" class="result-container hidden">
+          <h2>Decoded URL:</h2>
+          <div id="url-display" class="url-display"></div>
+          <div class="button-group">
+            <button id="open-btn" class="action-btn" tabindex="0">
+              Open URL
+            </button>
+            <button id="copy-btn" class="action-btn" tabindex="0">
+              Copy URL
+            </button>
+            <button id="reset-btn" class="action-btn secondary" tabindex="0">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div id="error-container" class="error-container hidden"></div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>
