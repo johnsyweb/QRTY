@@ -4,7 +4,7 @@ const path = require("path");
 const { exec } = require("child_process");
 
 const PORT = 8000;
-const BASE_PATH = "/qrty";
+const BASE_PATH = "/QRTY";
 const SRC_DIR = path.join(__dirname, "..", "src");
 
 const MIME_TYPES = {
