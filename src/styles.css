@@ -1,12 +1,12 @@
 .instructions {
   background: #eee8d5;
-  padding: 15px;
-  margin-bottom: 20px;
-  line-height: 1.7;
+  border-left: 4px solid #268bd2;
+  padding: 18px 20px;
+  margin-bottom: 24px;
 }
 
 .instructions p {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .instructions p:last-child {
@@ -15,70 +15,87 @@
 
 .instructions kbd {
   background: #073642;
-  color: #93a1a1;
+  color: #fdf6e3;
   padding: 2px 6px;
-  font:
-    0.85em Monaco,
-    Courier,
-    Monospace;
+  font-family: "Atkinson Hyperlegible Mono", Monaco, Courier, monospace;
+  font-size: 0.85em;
   border: 1px solid #2d6472;
   border-radius: 3px;
 }
 
 .privacy-notice {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #839496;
+  border-top: 1px solid #d7cec0;
+  margin-top: 16px;
+  padding-top: 16px;
 }
 
 .control-group {
-  margin: 20px 0;
+  margin: 24px 0;
 }
 
 .control-group button {
-  margin-right: 10px;
-  margin-bottom: 10px;
+  margin-right: 12px;
+  margin-bottom: 12px;
 }
 
 .button-group {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .capture-btn,
-.action-btn {
-  padding: 10px 20px;
-  font-size: 13px;
-  background: #2aa198;
+.action-btn,
+.file-input-label {
+  box-sizing: border-box;
+  min-width: 160px;
+  padding: 11px 22px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #268bd2;
   color: #fdf6e3;
-  border: 1px solid #2aa198;
+  border: 1px solid #1f6ea5;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 15px;
-  display: inline-block;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  margin-bottom: 16px;
+  display: inline-flex;
+  line-height: 1.2;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
 }
 
 .capture-btn:hover,
 .capture-btn:focus,
 .action-btn:hover,
-.action-btn:focus {
-  background: #2aa198;
-  color: #fdf6e3;
-  border-color: #2aa198;
+.action-btn:focus,
+.file-input-label:hover,
+.file-input-label:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(38, 139, 210, 0.25);
   outline: none;
 }
 
+.capture-btn:focus-visible,
+.action-btn:focus-visible,
+.file-input-label:focus-visible {
+  outline: 3px solid #b58900;
+  outline-offset: 1px;
+  transform: none;
+  box-shadow: none;
+}
+
 .action-btn.secondary {
-  background: #839496;
-  border-color: #839496;
+  background: #657b83;
+  border-color: #586e75;
 }
 
 .action-btn.secondary:hover,
 .action-btn.secondary:focus {
-  background: #839496;
-  border-color: #839496;
+  box-shadow: 0 4px 12px rgba(101, 123, 131, 0.25);
 }
 
 .button-group .action-btn {
@@ -86,35 +103,33 @@
 }
 
 .result-container {
-  margin-top: 20px;
-  padding-top: 20px;
+  margin-top: 24px;
+  padding-top: 24px;
   border-top: 1px solid #eee8d5;
 }
 
 .result-container h2 {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .url-display {
-  background: #eee8d5;
+  background: #f8f1e3;
   border: 1px solid #eee8d5;
-  padding: 10px;
-  margin-bottom: 15px;
+  padding: 12px;
+  margin-bottom: 16px;
   word-break: break-all;
-  font:
-    0.85em Monaco,
-    Courier,
-    Monospace;
-  color: #2aa198;
+  font-family: "Atkinson Hyperlegible Mono", Monaco, Courier, monospace;
+  color: #268bd2;
+  border-radius: 4px;
 }
 
 .error-container {
-  margin-top: 15px;
-  margin-bottom: 15px;
-  padding: 15px;
-  background: #eee8d5;
-  border: 1px solid #cb4b16;
-  color: #cb4b16;
+  margin: 18px 0;
+  padding: 16px;
+  background: #fceae7;
+  border: 1px solid #dc322f;
+  color: #b71c1c;
+  border-radius: 4px;
   position: relative;
   z-index: 100;
 }
@@ -124,7 +139,7 @@
 }
 
 #video-container {
-  margin: 20px 0;
+  margin: 24px 0;
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -135,28 +150,12 @@
   max-width: 100%;
   height: auto;
   display: block;
+  border-radius: 4px;
+  border: 1px solid #eee8d5;
 }
 
 #canvas-preview {
   display: none;
-}
-
-.file-input-label {
-  display: inline-block;
-  padding: 10px 20px;
-  background: #2aa198;
-  color: #fdf6e3;
-  border: 1px solid #2aa198;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 15px;
-}
-
-.file-input-label:hover,
-.file-input-label:focus {
-  background: #2aa198;
-  color: #fdf6e3;
-  border-color: #2aa198;
 }
 
 #file-input {
@@ -164,8 +163,8 @@
 }
 
 .scanning-status {
-  margin: 10px 0;
+  margin: 12px 0;
   font-size: 0.9em;
-  color: #839496;
+  color: #657b83;
   font-style: italic;
 }

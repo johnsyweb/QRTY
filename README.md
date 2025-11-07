@@ -60,6 +60,20 @@ The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 5. Click "Copy URL" or "Open URL" to use the decoded URL
 6. Press `Escape` to stop capture or reset
 
+## Screenshots
+
+![Screenshot of QRTY displaying decoded QR code results](./src/og-image.png)
+
+## Iconography
+
+- Primary app icon:
+
+  ![QRTY app icon showing stylised QR code on cream background](./src/icon-512.png)
+
+- Meta QR code (links to the hosted app):
+
+  ![QR code for https://johnsy.com/QRTY/](./src/qr-code.png)
+
 ## Keyboard Shortcuts
 
 - `Space` - Start/stop screen capture
@@ -70,7 +84,6 @@ The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 - `pnpm start` - Run local development server
 - `pnpm run lint` - Run ESLint
 - `pnpm run format` - Format code with Prettier
-- `pnpm run type-check` - Run TypeScript type checking
 - `pnpm run generate:icons` - Generate icon files from SVG
 - `pnpm run generate:og-image` - Generate OpenGraph image
 - `pnpm run generate:qr-code` - Generate QR code image for the site URL

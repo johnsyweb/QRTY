@@ -10,7 +10,7 @@ async function generateQRCode() {
       width: 512,
       margin: 2,
       color: {
-        dark: "#2aa198",
+        dark: "#268bd2",
         light: "#fdf6e3",
       },
     });

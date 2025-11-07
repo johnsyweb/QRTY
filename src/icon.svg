@@ -1,76 +1,36 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background using johnsy.com colours -->
-  <rect width="512" height="512" rx="115" fill="#fdf6e3"/>
-  
-  <!-- QR code pattern representation -->
-  <g transform="translate(128, 128)">
-    <!-- Finder pattern (top-left) -->
-    <rect x="0" y="0" width="64" height="64" fill="#2aa198"/>
-    <rect x="16" y="16" width="32" height="32" fill="#fdf6e3"/>
-    <rect x="32" y="32" width="16" height="16" fill="#2aa198"/>
-    
-    <!-- Finder pattern (top-right) -->
-    <rect x="192" y="0" width="64" height="64" fill="#2aa198"/>
-    <rect x="208" y="16" width="32" height="32" fill="#fdf6e3"/>
-    <rect x="224" y="32" width="16" height="16" fill="#2aa198"/>
-    
-    <!-- Finder pattern (bottom-left) -->
-    <rect x="0" y="192" width="64" height="64" fill="#2aa198"/>
-    <rect x="16" y="208" width="32" height="32" fill="#fdf6e3"/>
-    <rect x="32" y="224" width="16" height="16" fill="#2aa198"/>
-    
-    <!-- Data modules -->
-    <rect x="80" y="0" width="16" height="16" fill="#839496"/>
-    <rect x="112" y="0" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="0" width="16" height="16" fill="#839496"/>
-    <rect x="176" y="0" width="16" height="16" fill="#839496"/>
-    
-    <rect x="0" y="80" width="16" height="16" fill="#839496"/>
-    <rect x="32" y="80" width="16" height="16" fill="#839496"/>
-    <rect x="80" y="80" width="16" height="16" fill="#839496"/>
-    <rect x="112" y="80" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="80" width="16" height="16" fill="#839496"/>
-    <rect x="176" y="80" width="16" height="16" fill="#839496"/>
-    
-    <rect x="80" y="112" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="112" width="16" height="16" fill="#839496"/>
-    <rect x="176" y="112" width="16" height="16" fill="#839496"/>
-    
-    <rect x="0" y="144" width="16" height="16" fill="#839496"/>
-    <rect x="32" y="144" width="16" height="16" fill="#839496"/>
-    <rect x="80" y="144" width="16" height="16" fill="#839496"/>
-    <rect x="112" y="144" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="144" width="16" height="16" fill="#839496"/>
-    <rect x="176" y="144" width="16" height="16" fill="#839496"/>
-    
-    <rect x="0" y="176" width="16" height="16" fill="#839496"/>
-    <rect x="48" y="176" width="16" height="16" fill="#839496"/>
-    <rect x="80" y="176" width="16" height="16" fill="#839496"/>
-    <rect x="112" y="176" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="176" width="16" height="16" fill="#839496"/>
-    
-    <rect x="80" y="192" width="16" height="16" fill="#839496"/>
-    <rect x="112" y="192" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="192" width="16" height="16" fill="#839496"/>
-    <rect x="176" y="192" width="16" height="16" fill="#839496"/>
-    <rect x="208" y="192" width="16" height="16" fill="#839496"/>
-    <rect x="240" y="192" width="16" height="16" fill="#839496"/>
-    
-    <rect x="80" y="224" width="16" height="16" fill="#839496"/>
-    <rect x="112" y="224" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="224" width="16" height="16" fill="#839496"/>
-    <rect x="176" y="224" width="16" height="16" fill="#839496"/>
-    <rect x="208" y="224" width="16" height="16" fill="#839496"/>
-    <rect x="240" y="224" width="16" height="16" fill="#839496"/>
-    
-    <rect x="80" y="256" width="16" height="16" fill="#839496"/>
-    <rect x="144" y="256" width="16" height="16" fill="#839496"/>
-    <rect x="176" y="256" width="16" height="16" fill="#839496"/>
-    <rect x="208" y="256" width="16" height="16" fill="#839496"/>
-    <rect x="240" y="256" width="16" height="16" fill="#839496"/>
+  <rect width="512" height="512" rx="120" fill="#fdf6e3"/>
+  <rect x="64" y="64" width="384" height="384" rx="48" fill="#fefaf0" stroke="#eee8d5" stroke-width="8"/>
+
+  <!-- Accent arc -->
+  <path d="M128 152 C128 108 196 96 256 96 C316 96 384 108 384 152" stroke="#268bd2" stroke-width="24" stroke-linecap="round" fill="none"/>
+
+  <!-- Finder patterns -->
+  <g fill="#268bd2">
+    <rect x="116" y="176" width="104" height="104" rx="18"/>
+    <rect x="292" y="176" width="104" height="104" rx="18"/>
+    <rect x="116" y="312" width="104" height="104" rx="18"/>
   </g>
-  
-  <!-- QRTY text -->
-  <text x="256" y="400" font-family="Verdana, serif" font-size="64" font-weight="bold" fill="#cb4b16" text-anchor="middle">QRTY</text>
+  <g fill="#fdf6e3">
+    <rect x="144" y="204" width="48" height="48" rx="10"/>
+    <rect x="320" y="204" width="48" height="48" rx="10"/>
+    <rect x="144" y="340" width="48" height="48" rx="10"/>
+  </g>
+
+  <!-- Data modules -->
+  <g>
+    <rect x="248" y="208" width="28" height="28" rx="7" fill="#657b83"/>
+    <rect x="288" y="268" width="28" height="28" rx="7" fill="#657b83"/>
+    <rect x="224" y="320" width="28" height="28" rx="7" fill="#2aa198"/>
+    <rect x="276" y="348" width="28" height="28" rx="7" fill="#b58900"/>
+    <rect x="204" y="264" width="28" height="28" rx="7" fill="#2aa198"/>
+    <rect x="256" y="360" width="28" height="28" rx="7" fill="#657b83"/>
+    <rect x="312" y="316" width="20" height="20" rx="5" fill="#b58900"/>
+  </g>
+
+  <!-- Accent ribbon -->
+  <path d="M200 260 L312 260 C332 260 340 284 324 296 L244 356 C228 368 208 356 208 336 L208 288 C208 272 220 260 236 260 Z" fill="#2aa198" opacity="0.18"/>
+
+  <text x="256" y="418" font-family="'Atkinson Hyperlegible', 'Segoe UI', sans-serif" font-size="72" font-weight="700" fill="#268bd2" text-anchor="middle">QRTY</text>
 </svg>
 
