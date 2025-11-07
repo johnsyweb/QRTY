@@ -1,95 +1,16 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 100%;
-  font: inherit;
-  vertical-align: baseline;
-}
-
-html,
-body {
-  background-color: #fdf6e3;
-  color: #839496;
-  font-family: Verdana, serif;
-  font-size: 13px;
-  line-height: 1.7;
-  min-height: 100vh;
-}
-
-a,
-a:active,
-a:visited {
-  color: #2aa198;
-  text-decoration: none;
-  border-bottom: 1px solid #eee8d5;
-  padding-bottom: 2px;
-}
-
-a:hover {
-  background-color: #eee8d5;
-  border-color: #eee8d5;
-  color: #2aa198;
-}
-
-h1,
-h2,
-h3 {
-  color: #cb4b16;
-}
-
-h1 {
-  font-size: 17px;
-  margin: 0 0 10px 0;
-}
-
-h2 {
-  font-size: 15px;
-  margin: 0 0 10px 0;
-}
-
-h3 {
-  font-size: 14px;
-  margin: 0 0 10px 0;
-}
-
-#header {
-  width: 500px;
-  margin: 40px auto 50px auto;
-}
-
-#header h1 {
-  font-size: 32px;
-  margin: 0 0 10px 0;
-}
-
-#header h1 a,
-#header h1 a:visited,
-#header h1 a:active {
-  color: #cb4b16;
-}
-
-#header h1 a:hover {
-  background-color: #eee8d5;
-  border-color: #eee8d5;
-}
-
-#page {
-  width: 500px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.container {
-  padding: 0;
-}
-
 .instructions {
   background: #eee8d5;
   padding: 15px;
   margin-bottom: 20px;
   line-height: 1.7;
+}
+
+.instructions p {
+  margin-bottom: 15px;
+}
+
+.instructions p:last-child {
+  margin-bottom: 0;
 }
 
 .instructions kbd {
@@ -108,6 +29,21 @@ h3 {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #839496;
+}
+
+.control-group {
+  margin: 20px 0;
+}
+
+.control-group button {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .capture-btn,
@@ -145,6 +81,10 @@ h3 {
   border-color: #839496;
 }
 
+.button-group .action-btn {
+  margin-bottom: 0;
+}
+
 .result-container {
   margin-top: 20px;
   padding-top: 20px;
@@ -166,16 +106,6 @@ h3 {
     Courier,
     Monospace;
   color: #2aa198;
-}
-
-.button-group {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  margin-bottom: 0;
 }
 
 .error-container {
@@ -211,10 +141,6 @@ h3 {
   display: none;
 }
 
-#file-input {
-  margin: 15px 0;
-}
-
 .file-input-label {
   display: inline-block;
   padding: 10px 20px;
@@ -235,15 +161,6 @@ h3 {
 
 #file-input {
   display: none;
-}
-
-.control-group {
-  margin: 20px 0;
-}
-
-.control-group button {
-  margin-right: 10px;
-  margin-bottom: 10px;
 }
 
 .scanning-status {
