@@ -87,14 +87,9 @@
       <main class="container">
         <div id="instructions" class="instructions">
           <p>
-            Capture a section of your screen to scan QR codes, or upload an
-            image file containing a QR code. The interface stays minimal so you
-            can easily scan QR codes from your desktop.
-          </p>
-          <p>
-            <strong>Screen capture:</strong> Clicking "Capture Screen" will
-            request permission to capture your screen or a window. QR codes will
-            be automatically detected from the captured screen.
+            Capture a section of your screen or upload an image file containing
+            the QR code you want to decode. The interface stays minimal so you
+            can easily copy the results.
           </p>
           <p class="privacy-notice">
             <strong>Privacy:</strong> All QR code processing happens entirely in
@@ -104,13 +99,22 @@
         </div>
 
         <div class="control-group">
-          <button id="capture-btn" class="capture-btn" tabindex="0">
+          <button
+            id="capture-btn"
+            class="capture-btn"
+            type="button"
+            tabindex="0"
+          >
             Capture Screen
           </button>
           <label for="file-input" class="file-input-label" tabindex="0">
             Upload Image
           </label>
           <input type="file" id="file-input" accept="image/*" />
+          <p id="capture-support-note" class="support-note">
+            Screen capture works best in modern desktop browsers. If it isn’t
+            supported on your device, please use the upload option instead.
+          </p>
         </div>
 
         <div id="video-container" class="hidden">
@@ -129,19 +133,16 @@
         </div>
 
         <div id="result-container" class="result-container hidden">
-          <h2>Decoded URL:</h2>
+          <h2>Decoded URLs:</h2>
           <div id="url-display" class="url-display"></div>
-          <div class="button-group">
-            <button id="open-btn" class="action-btn" tabindex="0">
-              Open URL
-            </button>
-            <button id="copy-btn" class="action-btn" tabindex="0">
-              Copy URL
-            </button>
-            <button id="reset-btn" class="action-btn secondary" tabindex="0">
-              Reset
-            </button>
-          </div>
+          <button
+            id="reset-btn"
+            class="action-btn secondary"
+            type="button"
+            tabindex="0"
+          >
+            Reset
+          </button>
         </div>
 
         <div id="error-container" class="error-container hidden"></div>

@@ -6,8 +6,8 @@ QR code decoder using screen capture or image upload. Capture a section of your 
 
 - Capture your screen to automatically detect QR codes
 - Upload image files containing QR codes
-- Automatically decode QR codes and extract URLs
-- Copy or open decoded URLs
+- Automatically decode multiple QR codes and extract each URL
+- Open or share decoded URLs (with clipboard fallback)
 - Fully keyboard accessible
 - Minimal interface that doesn't block QR codes
 - Styled to match johnsy.com design
@@ -53,12 +53,11 @@ pnpm install
 
 The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 
-1. Click "Capture Screen" to start screen capture (you'll be prompted to select what to share)
-2. QR codes will be automatically detected from the captured screen
-3. Or click "Upload Image" to upload an image file containing a QR code
-4. The decoded URL will be displayed automatically
-5. Click "Copy URL" or "Open URL" to use the decoded URL
-6. Press `Escape` to stop capture or reset
+1. Click "Upload Image" to upload an image file containing a QR code
+2. The decoded URL will be displayed automatically
+3. Click "Copy URL" or "Open URL" to use the decoded URL
+4. Press `Escape` to reset the results view
+5. You can also click "Capture Screen" in desktop browsers that support screen sharing; unsupported browsers will show an error and you can fall back to the upload option
 
 ## Screenshots
 
@@ -76,12 +75,14 @@ The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 
 ## Keyboard Shortcuts
 
-- `Space` - Start/stop screen capture
-- `Escape` - Stop capture or reset
+- `Space` (when screen capture is available) - Start/stop screen capture
+- `Escape` - Stop capture or reset the results view
 
 ## Development
 
 - `pnpm start` - Run local development server
+  - Served from `http://localhost:8000/QRTY/`
+  - Also binds to your local network (e.g. `http://<your-ip>:8000/QRTY/`) so you can test on phones/tablets
 - `pnpm run lint` - Run ESLint
 - `pnpm run format` - Format code with Prettier
 - `pnpm run generate:icons` - Generate icon files from SVG

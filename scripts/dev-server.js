@@ -1,11 +1,12 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-const { exec } = require("child_process");
+const os = require("os");
 
 const PORT = 8000;
 const BASE_PATH = "/QRTY";
 const SRC_DIR = path.join(__dirname, "..", "src");
+const HOST = process.env.HOST || "0.0.0.0";
 
 const MIME_TYPES = {
   ".html": "text/html",
@@ -58,9 +59,32 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}${BASE_PATH}/`);
-  console.log(`Press Ctrl+C to stop`);
+server.listen(PORT, HOST, () => {
+  const networkInterfaces = os.networkInterfaces();
+  const addresses = Object.values(networkInterfaces)
+    .flat()
+    .filter(
+      (details) => details && !details.internal && details.family === "IPv4"
+    )
+    .map((details) => details.address);
+
+  const localUrl = `http://localhost:${PORT}${BASE_PATH}/`;
+  console.log(`Server running at ${localUrl}`);
+
+  if (HOST !== "127.0.0.1" && HOST !== "localhost" && HOST !== "0.0.0.0") {
+    console.log(`Also available at http://${HOST}:${PORT}${BASE_PATH}/`);
+  }
+
+  if (addresses.length > 0) {
+    console.log("On your network:");
+    addresses.forEach((address) => {
+      console.log(`  http://${address}:${PORT}${BASE_PATH}/`);
+    });
+  } else {
+    console.log("No external network interfaces detected.");
+  }
+
+  console.log("Press Ctrl+C to stop");
 });
 
 process.on("SIGINT", () => {

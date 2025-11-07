@@ -6,14 +6,18 @@ const canvasPreview = document.getElementById("canvas-preview");
 const stopCaptureBtn = document.getElementById("stop-capture-btn");
 const resultContainer = document.getElementById("result-container");
 const urlDisplay = document.getElementById("url-display");
-const openBtn = document.getElementById("open-btn");
-const copyBtn = document.getElementById("copy-btn");
 const resetBtn = document.getElementById("reset-btn");
 const errorContainer = document.getElementById("error-container");
+const captureSupportNote = document.getElementById("capture-support-note");
 
 let stream = null;
 let scanInterval = null;
-let decodedUrl = null;
+let decodedUrls = [];
+
+if (captureSupportNote) {
+  captureSupportNote.textContent =
+    "Screen capture works best in modern desktop browsers. If it isn't supported on your device, please use the upload option instead.";
+}
 
 function showError(message) {
   errorContainer.textContent = message;
@@ -30,16 +34,208 @@ function hideError() {
 
 function resetState() {
   resultContainer.classList.add("hidden");
-  decodedUrl = null;
+  decodedUrls = [];
+  urlDisplay.innerHTML = "";
   hideError();
   stopCapture();
 }
 
-function displayUrl(url) {
-  decodedUrl = url;
-  urlDisplay.textContent = url;
+function urlsAreEqual(a, b) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((value, index) => value === b[index]);
+}
+
+function setTemporaryButtonMessage(button, message) {
+  if (!button) return;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = message;
+  setTimeout(() => {
+    button.textContent = originalText;
+    button.disabled = false;
+  }, 2000);
+}
+
+async function copyToClipboard(value, button) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setTemporaryButtonMessage(button, "Copied!");
+    } catch (error) {
+      console.error("Failed to copy value", error);
+      showError(`Failed to copy. Please copy this value manually:\n${value}`);
+    }
+  } else {
+    showError(
+      `Clipboard access is unavailable. Please copy this value manually:\n${value}`
+    );
+  }
+}
+
+async function shareContent(value, button, { isUrl } = {}) {
+  if (navigator.share) {
+    try {
+      const shareData = isUrl ? { url: value, text: value } : { text: value };
+      await navigator.share(shareData);
+      return;
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        return;
+      }
+      console.warn("navigator.share failed, falling back to copy", error);
+    }
+  }
+  await copyToClipboard(value, button);
+}
+
+function isHttpUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch (error) {
+    return false;
+  }
+}
+
+function displayUrls(values) {
+  decodedUrls = values.slice();
+  urlDisplay.innerHTML = "";
+
+  values.forEach((value) => {
+    const item = document.createElement("div");
+    item.className = "url-item";
+
+    const isUrl = isHttpUrl(value);
+
+    let primaryContent;
+    if (isUrl) {
+      const link = document.createElement("a");
+      link.href = value;
+      link.textContent = value;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "url-link";
+      primaryContent = link;
+    } else {
+      const text = document.createElement("pre");
+      text.textContent = value;
+      text.className = "url-text";
+      primaryContent = text;
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "url-actions";
+
+    if (isUrl) {
+      const openButton = document.createElement("button");
+      openButton.type = "button";
+      openButton.className = "action-btn secondary";
+      openButton.textContent = "Open";
+      openButton.addEventListener("click", () => {
+        window.open(value, "_blank", "noopener,noreferrer");
+      });
+      actions.appendChild(openButton);
+    }
+
+    const shareButton = document.createElement("button");
+    shareButton.type = "button";
+    shareButton.className = "action-btn";
+    shareButton.textContent = navigator.share ? "Share" : "Copy";
+    shareButton.addEventListener("click", () => {
+      shareContent(value, shareButton, { isUrl });
+    });
+
+    actions.appendChild(shareButton);
+
+    item.appendChild(primaryContent);
+    item.appendChild(actions);
+    urlDisplay.appendChild(item);
+  });
+
   resultContainer.classList.remove("hidden");
   hideError();
+}
+
+function scanQRCodesFromCanvas(canvas) {
+  const { width, height } = canvas;
+  if (!width || !height) {
+    return [];
+  }
+
+  const ctx = canvas.getContext("2d");
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const workingData = new Uint8ClampedArray(imageData.data);
+  const results = [];
+  const margin = 6;
+
+  for (;;) {
+    const code = jsQR(workingData, width, height, {
+      inversionAttempts: "attemptBoth",
+    });
+
+    if (!code || !code.data) {
+      break;
+    }
+
+    const text = code.data.trim();
+    const location = code.location;
+
+    if (!location) {
+      break;
+    }
+
+    const corners = [
+      location.topLeftCorner,
+      location.topRightCorner,
+      location.bottomRightCorner,
+      location.bottomLeftCorner,
+    ];
+
+    const centerX = corners.reduce((sum, point) => sum + point.x, 0) / 4;
+    const centerY = corners.reduce((sum, point) => sum + point.y, 0) / 4;
+
+    if (text && !results.some((item) => item.data === text)) {
+      results.push({ data: text, centerX, centerY });
+    }
+
+    const minX = Math.max(
+      Math.floor(Math.min(...corners.map((point) => point.x)) - margin),
+      0
+    );
+    const maxX = Math.min(
+      Math.ceil(Math.max(...corners.map((point) => point.x)) + margin),
+      width - 1
+    );
+    const minY = Math.max(
+      Math.floor(Math.min(...corners.map((point) => point.y)) - margin),
+      0
+    );
+    const maxY = Math.min(
+      Math.ceil(Math.max(...corners.map((point) => point.y)) + margin),
+      height - 1
+    );
+
+    for (let y = minY; y <= maxY; y += 1) {
+      for (let x = minX; x <= maxX; x += 1) {
+        const offset = (y * width + x) * 4;
+        workingData[offset] = 255;
+        workingData[offset + 1] = 255;
+        workingData[offset + 2] = 255;
+        workingData[offset + 3] = 255;
+      }
+    }
+  }
+
+  results.sort((a, b) => {
+    if (Math.abs(a.centerY - b.centerY) > 20) {
+      return a.centerY - b.centerY;
+    }
+    return a.centerX - b.centerX;
+  });
+
+  return results.map((item) => item.data);
 }
 
 function stopCapture() {
@@ -55,28 +251,8 @@ function stopCapture() {
   videoPreview.srcObject = null;
 }
 
-function scanQRCodeFromCanvas(canvas) {
-  const ctx = canvas.getContext("2d");
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-  if (code) {
-    displayUrl(code.data);
-    stopCapture();
-    return true;
-  }
-  return false;
-}
-
 function startScreenCapture() {
   if (stream) {
-    return;
-  }
-
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-    showError(
-      "Screen capture is not supported in your browser. Please use a modern browser like Chrome, Firefox, or Edge, or use the file upload option."
-    );
     return;
   }
 
@@ -106,7 +282,12 @@ function startScreenCapture() {
               canvasPreview.width,
               canvasPreview.height
             );
-            scanQRCodeFromCanvas(canvasPreview);
+
+            const values = scanQRCodesFromCanvas(canvasPreview);
+            if (values.length > 0 && !urlsAreEqual(values, decodedUrls)) {
+              displayUrls(values);
+              stopCapture();
+            }
           }
         }, 100);
       });
@@ -149,7 +330,10 @@ function handleFileUpload(event) {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
 
-      if (scanQRCodeFromCanvas(canvas)) {
+      const values = scanQRCodesFromCanvas(canvas);
+
+      if (values.length > 0) {
+        displayUrls(values);
         fileInput.value = "";
       } else {
         showError("No QR code found in image. Please try another image.");
@@ -169,31 +353,13 @@ function handleFileUpload(event) {
   reader.readAsDataURL(file);
 }
 
-captureBtn.addEventListener("click", startScreenCapture);
 stopCaptureBtn.addEventListener("click", stopCapture);
 fileInput.addEventListener("change", handleFileUpload);
 resetBtn.addEventListener("click", resetState);
 
-openBtn.addEventListener("click", () => {
-  if (decodedUrl) {
-    window.open(decodedUrl, "_blank");
-  }
-});
-
-copyBtn.addEventListener("click", async () => {
-  if (decodedUrl) {
-    try {
-      await navigator.clipboard.writeText(decodedUrl);
-      const originalText = copyBtn.textContent;
-      copyBtn.textContent = "Copied!";
-      setTimeout(() => {
-        copyBtn.textContent = originalText;
-      }, 2000);
-    } catch (error) {
-      showError("Failed to copy URL to clipboard");
-    }
-  }
-});
+if (captureBtn) {
+  captureBtn.addEventListener("click", startScreenCapture);
+}
 
 document.addEventListener("keydown", (event) => {
   if (event.code === "Escape") {
@@ -208,10 +374,11 @@ document.addEventListener("keydown", (event) => {
     event.code === "Space" &&
     !event.target.matches("button, input, textarea")
   ) {
-    event.preventDefault();
     if (stream) {
+      event.preventDefault();
       stopCapture();
-    } else {
+    } else if (captureBtn) {
+      event.preventDefault();
       captureBtn.focus();
       startScreenCapture();
     }

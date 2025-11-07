@@ -29,6 +29,12 @@
   padding-top: 16px;
 }
 
+.support-note {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #657b83;
+}
+
 .control-group {
   margin: 24px 0;
 }
@@ -36,12 +42,6 @@
 .control-group button {
   margin-right: 12px;
   margin-bottom: 12px;
-}
-
-.button-group {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .capture-btn,
@@ -98,10 +98,6 @@
   box-shadow: 0 4px 12px rgba(101, 123, 131, 0.25);
 }
 
-.button-group .action-btn {
-  margin-bottom: 0;
-}
-
 .result-container {
   margin-top: 24px;
   padding-top: 24px;
@@ -113,14 +109,61 @@
 }
 
 .url-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.url-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   background: #f8f1e3;
   border: 1px solid #eee8d5;
+  border-radius: 4px;
   padding: 12px;
-  margin-bottom: 16px;
-  word-break: break-all;
+}
+
+.url-link {
+  flex: 1 1 240px;
+  word-break: break-word;
   font-family: "Atkinson Hyperlegible Mono", Monaco, Courier, monospace;
   color: #268bd2;
-  border-radius: 4px;
+  border: none;
+}
+
+.url-link:hover,
+.url-link:focus {
+  background-color: #eee8d5;
+  outline: none;
+}
+
+.url-text {
+  flex: 1 1 240px;
+  word-break: break-word;
+  font-family: "Atkinson Hyperlegible Mono", Monaco, Courier, monospace;
+  color: #586e75;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.url-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.url-actions .action-btn {
+  min-width: auto;
+  padding: 8px 18px;
+  margin-bottom: 0;
+}
+
+#reset-btn {
+  margin-top: 8px;
 }
 
 .error-container {
