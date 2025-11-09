@@ -3,9 +3,9 @@ module.exports = {
   testEnvironment: "jsdom",
   transform: {
     "^.+\\.(ts|tsx)$": [
-      "ts-jest",
+      "babel-jest",
       {
-        tsconfig: "tsconfig.json",
+        configFile: "./babel.config.cjs",
       },
     ],
   },

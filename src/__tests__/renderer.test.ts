@@ -1,10 +1,42 @@
 /* eslint-env jest */
 
+type RendererTestHooks = {
+  mergeUniqueValues: (...lists: string[][]) => string[];
+  isHttpUrl: (value: string) => boolean;
+  displayResults: (values: string[]) => void;
+  scanBarcodesFromCanvas: (
+    canvas:
+      | HTMLCanvasElement
+      | {
+          width: number;
+          height: number;
+          getContext: () => CanvasRenderingContext2D;
+        }
+  ) => string[];
+  getMultipleBarcodeReader: () => unknown;
+  scanCodesFromCanvas: (canvas: HTMLCanvasElement) => string[];
+  scanQRCodesFromCanvas: (canvas: HTMLCanvasElement) => string[];
+  shareContent: (...args: unknown[]) => Promise<void>;
+  copyToClipboard: (...args: unknown[]) => Promise<void>;
+  valuesAreEqual: (a: string[], b: string[]) => boolean;
+  resetBarcodeReaders?: () => void;
+};
+
+declare global {
+  interface Window {
+    __QRTY_TEST_HOOKS__?: RendererTestHooks;
+    ZXing?: any;
+  }
+
+  // eslint-disable-next-line no-var
+  var jsQR: jest.Mock;
+}
+
 describe("renderer helpers", () => {
-  let hooks;
-  let originalClipboard;
-  let originalShare;
-  let originalScrollIntoView;
+  let hooks: RendererTestHooks;
+  let originalClipboard: Clipboard | undefined;
+  let originalShare: typeof navigator.share;
+  let originalScrollIntoView: ((...args: unknown[]) => void) | null;
 
   beforeEach(() => {
     jest.resetModules();
@@ -45,9 +77,9 @@ describe("renderer helpers", () => {
     window.navigator.share = undefined;
 
     window.open = jest.fn();
-    global.jsQR = jest.fn();
+    (globalThis as any).jsQR = jest.fn();
 
-    const canvasContextStub = {
+    const canvasContextStub: Partial<CanvasRenderingContext2D> = {
       drawImage: jest.fn(),
       fillRect: jest.fn(),
       getImageData: jest.fn(() => ({
@@ -60,10 +92,13 @@ describe("renderer helpers", () => {
     };
     jest
       .spyOn(HTMLCanvasElement.prototype, "getContext")
-      .mockImplementation(() => canvasContextStub);
+      .mockImplementation(
+        () => canvasContextStub as CanvasRenderingContext2D | null
+      );
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("../renderer.js");
-    hooks = window.__QRTY_TEST_HOOKS__;
+    hooks = (window.__QRTY_TEST_HOOKS__ || {}) as RendererTestHooks;
   });
 
   afterEach(() => {
@@ -88,7 +123,7 @@ describe("renderer helpers", () => {
 
     jest.restoreAllMocks();
     delete window.__QRTY_TEST_HOOKS__;
-    delete global.jsQR;
+    delete (globalThis as any).jsQR;
     delete window.ZXing;
   });
 
@@ -143,12 +178,13 @@ describe("renderer helpers", () => {
     const canvasMock = {
       width: 120,
       height: 60,
-      getContext: () => ({
-        getImageData: () => ({
-          data: new Uint8ClampedArray(28800),
-        }),
-      }),
-    };
+      getContext: () =>
+        ({
+          getImageData: () => ({
+            data: new Uint8ClampedArray(28800),
+          }),
+        }) as CanvasRenderingContext2D,
+    } as unknown as HTMLCanvasElement;
 
     expect(hooks.scanBarcodesFromCanvas(canvasMock)).toEqual([]);
   });
@@ -212,18 +248,21 @@ describe("renderer helpers", () => {
     const canvasMock = {
       width,
       height,
-      getContext: jest.fn(() => ({
-        drawImage: jest.fn(),
-        fillRect: jest.fn(),
-        getImageData: jest.fn(() => ({
-          data: baseData.slice(),
-          width,
-          height,
-        })),
-        imageSmoothingEnabled: true,
-        fillStyle: "#000000",
-      })),
-    };
+      getContext: jest.fn(
+        () =>
+          ({
+            drawImage: jest.fn(),
+            fillRect: jest.fn(),
+            getImageData: jest.fn(() => ({
+              data: baseData.slice(),
+              width,
+              height,
+            })),
+            imageSmoothingEnabled: true,
+            fillStyle: "#000000",
+          }) as CanvasRenderingContext2D
+      ),
+    } as unknown as HTMLCanvasElement;
 
     const values = hooks.scanBarcodesFromCanvas(canvasMock);
 
@@ -237,8 +276,11 @@ describe("renderer helpers", () => {
   });
 
   test("scanBarcodesFromCanvas decodes a Foretoken-generated barcode", () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createCanvas } = require("@napi-rs/canvas");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const JsBarcode = require("jsbarcode");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ZXingLib = require("@zxing/library");
 
     const token = `P${String(1030).padStart(4, "0")}`;
@@ -270,7 +312,7 @@ describe("renderer helpers", () => {
     const previousZXing = window.ZXing;
     window.ZXing = ZXingLib;
 
-    hooks.resetBarcodeReaders();
+    hooks.resetBarcodeReaders?.();
 
     try {
       const values = hooks.scanBarcodesFromCanvas(baseCanvas);
