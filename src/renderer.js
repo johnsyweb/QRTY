@@ -2,6 +2,8 @@
 
 /**
  * @typedef {import("./types/renderer-hooks").RendererTestHooks} RendererTestHooks
+ * @typedef {import("./types/renderer-hooks").ZXingModule} ZXingModule
+ * @typedef {import("./types/renderer-hooks").ZXingMultipleReader} ZXingMultipleReader
  */
 
 const captureBtn =
@@ -52,11 +54,11 @@ const captureSupportNote =
 let stream = null;
 let scanInterval = null;
 let decodedValues = [];
-/** @type {any} */
+/** @type {InstanceType<ZXingModule["MultiFormatReader"]> | null} */
 let multiFormatReader = null;
-/** @type {any} */
+/** @type {ZXingMultipleReader | null} */
 let multipleBarcodeReader = null;
-/** @type {any} */
+/** @type {Map<any, any> | null} */
 let barcodeHints = null;
 
 function resetBarcodeReaders() {
@@ -600,8 +602,11 @@ function scanQRCodesFromCanvas(canvas) {
   return results.map((item) => item.data);
 }
 
+/**
+ * @returns {ZXingMultipleReader | null}
+ */
 function getMultipleBarcodeReader() {
-  /** @type {any} */
+  /** @type {ZXingModule | undefined} */
   const ZXingLib = window.ZXing;
   if (!ZXingLib) {
     return null;
@@ -671,6 +676,13 @@ function getMultipleBarcodeReader() {
             return [];
           }
           throw error;
+        } finally {
+          if (
+            multiFormatReader &&
+            typeof multiFormatReader.reset === "function"
+          ) {
+            multiFormatReader.reset();
+          }
         }
       },
     };
@@ -683,8 +695,12 @@ function getMultipleBarcodeReader() {
  * @param {HTMLCanvasElement} canvas
  * @returns {string[]}
  */
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @returns {string[]}
+ */
 function scanBarcodesFromCanvas(canvas) {
-  /** @type {any} */
+  /** @type {ZXingModule | undefined} */
   const ZXingLib = window.ZXing;
   const reader = getMultipleBarcodeReader();
 
