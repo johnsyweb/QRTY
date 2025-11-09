@@ -1,35 +1,18 @@
 /* eslint-env jest */
 
-type RendererTestHooks = {
-  mergeUniqueValues: (...lists: string[][]) => string[];
-  isHttpUrl: (value: string) => boolean;
-  displayResults: (values: string[]) => void;
-  scanBarcodesFromCanvas: (
-    canvas:
-      | HTMLCanvasElement
-      | {
-          width: number;
-          height: number;
-          getContext: () => CanvasRenderingContext2D;
-        }
-  ) => string[];
-  getMultipleBarcodeReader: () => unknown;
-  scanCodesFromCanvas: (canvas: HTMLCanvasElement) => string[];
-  scanQRCodesFromCanvas: (canvas: HTMLCanvasElement) => string[];
-  shareContent: (...args: unknown[]) => Promise<void>;
-  copyToClipboard: (...args: unknown[]) => Promise<void>;
-  valuesAreEqual: (a: string[], b: string[]) => boolean;
-  resetBarcodeReaders?: () => void;
-};
+import type { RendererTestHooks } from "../types/renderer-hooks";
 
-declare global {
-  interface Window {
-    __QRTY_TEST_HOOKS__?: RendererTestHooks;
-    ZXing?: any;
-  }
-
-  // eslint-disable-next-line no-var
-  var jsQR: jest.Mock;
+function createImageDataStub(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number
+): ImageData {
+  return {
+    data,
+    width,
+    height,
+    colorSpace: "srgb",
+  } as unknown as ImageData;
 }
 
 describe("renderer helpers", () => {
@@ -79,22 +62,18 @@ describe("renderer helpers", () => {
     window.open = jest.fn();
     (globalThis as any).jsQR = jest.fn();
 
-    const canvasContextStub: Partial<CanvasRenderingContext2D> = {
+    const canvasContextStub = {
       drawImage: jest.fn(),
       fillRect: jest.fn(),
-      getImageData: jest.fn(() => ({
-        data: new Uint8ClampedArray(4),
-        width: 1,
-        height: 1,
-      })),
+      getImageData: jest.fn(() =>
+        createImageDataStub(new Uint8ClampedArray(4), 1, 1)
+      ),
       imageSmoothingEnabled: true,
       fillStyle: "#000000",
-    };
+    } as unknown as CanvasRenderingContext2D;
     jest
       .spyOn(HTMLCanvasElement.prototype, "getContext")
-      .mockImplementation(
-        () => canvasContextStub as CanvasRenderingContext2D | null
-      );
+      .mockImplementation(() => canvasContextStub);
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("../renderer.js");
@@ -107,7 +86,7 @@ describe("renderer helpers", () => {
     }
 
     if (originalClipboard === undefined) {
-      delete window.navigator.clipboard;
+      Reflect.deleteProperty(window.navigator, "clipboard");
     } else {
       Object.defineProperty(window.navigator, "clipboard", {
         configurable: true,
@@ -122,9 +101,9 @@ describe("renderer helpers", () => {
     }
 
     jest.restoreAllMocks();
-    delete window.__QRTY_TEST_HOOKS__;
-    delete (globalThis as any).jsQR;
-    delete window.ZXing;
+    window.__QRTY_TEST_HOOKS__ = undefined;
+    (globalThis as any).jsQR = undefined;
+    window.ZXing = undefined;
   });
 
   test("mergeUniqueValues merges lists without duplicates", () => {
@@ -180,10 +159,9 @@ describe("renderer helpers", () => {
       height: 60,
       getContext: () =>
         ({
-          getImageData: () => ({
-            data: new Uint8ClampedArray(28800),
-          }),
-        }) as CanvasRenderingContext2D,
+          getImageData: () =>
+            createImageDataStub(new Uint8ClampedArray(28800), 120, 60),
+        }) as unknown as CanvasRenderingContext2D,
     } as unknown as HTMLCanvasElement;
 
     expect(hooks.scanBarcodesFromCanvas(canvasMock)).toEqual([]);
@@ -253,22 +231,28 @@ describe("renderer helpers", () => {
           ({
             drawImage: jest.fn(),
             fillRect: jest.fn(),
-            getImageData: jest.fn(() => ({
-              data: baseData.slice(),
-              width,
-              height,
-            })),
+            getImageData: jest.fn(() =>
+              createImageDataStub(
+                new Uint8ClampedArray(baseData),
+                width,
+                height
+              )
+            ),
             imageSmoothingEnabled: true,
             fillStyle: "#000000",
-          }) as CanvasRenderingContext2D
+          }) as unknown as CanvasRenderingContext2D
       ),
     } as unknown as HTMLCanvasElement;
 
     const values = hooks.scanBarcodesFromCanvas(canvasMock);
 
     expect(values).toEqual(["1234567890"]);
-    expect(window.ZXing.RGBLuminanceSource).toHaveBeenCalledTimes(1);
-    const [processedData] = window.ZXing.RGBLuminanceSource.mock.calls[0];
+    const zxMock = window.ZXing as {
+      RGBLuminanceSource: jest.Mock;
+    };
+
+    expect(zxMock.RGBLuminanceSource).toHaveBeenCalledTimes(1);
+    const [processedData] = zxMock.RGBLuminanceSource.mock.calls[0];
     expect(processedData).toBeInstanceOf(Uint8ClampedArray);
     expect(processedData.some((channel) => channel === 0)).toBe(true);
     expect(processedData.some((channel) => channel === 255)).toBe(true);
