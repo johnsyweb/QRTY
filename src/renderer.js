@@ -1,20 +1,62 @@
-const captureBtn = document.getElementById("capture-btn");
-const fileInput = document.getElementById("file-input");
-const videoContainer = document.getElementById("video-container");
-const videoPreview = document.getElementById("video-preview");
-const canvasPreview = document.getElementById("canvas-preview");
-const stopCaptureBtn = document.getElementById("stop-capture-btn");
-const resultContainer = document.getElementById("result-container");
-const resultList = document.getElementById("result-list");
-const resetBtn = document.getElementById("reset-btn");
-const errorContainer = document.getElementById("error-container");
-const captureSupportNote = document.getElementById("capture-support-note");
+// @ts-check
+
+/**
+ * @typedef {import("./types/renderer-hooks").RendererTestHooks} RendererTestHooks
+ */
+
+const captureBtn =
+  /** @type {HTMLButtonElement | null} */ (
+    document.getElementById("capture-btn")
+  );
+const fileInput =
+  /** @type {HTMLInputElement | null} */ (
+    document.getElementById("file-input")
+  );
+const videoContainer =
+  /** @type {HTMLDivElement | null} */ (
+    document.getElementById("video-container")
+  );
+const videoPreview =
+  /** @type {HTMLVideoElement | null} */ (
+    document.getElementById("video-preview")
+  );
+const canvasPreview =
+  /** @type {HTMLCanvasElement | null} */ (
+    document.getElementById("canvas-preview")
+  );
+const stopCaptureBtn =
+  /** @type {HTMLButtonElement | null} */ (
+    document.getElementById("stop-capture-btn")
+  );
+const resultContainer =
+  /** @type {HTMLDivElement | null} */ (
+    document.getElementById("result-container")
+  );
+const resultList =
+  /** @type {HTMLDivElement | null} */ (
+    document.getElementById("result-list")
+  );
+const resetBtn =
+  /** @type {HTMLButtonElement | null} */ (
+    document.getElementById("reset-btn")
+  );
+const errorContainer =
+  /** @type {HTMLDivElement | null} */ (
+    document.getElementById("error-container")
+  );
+const captureSupportNote =
+  /** @type {HTMLParagraphElement | null} */ (
+    document.getElementById("capture-support-note")
+  );
 
 let stream = null;
 let scanInterval = null;
 let decodedValues = [];
+/** @type {any} */
 let multiFormatReader = null;
+/** @type {any} */
 let multipleBarcodeReader = null;
+/** @type {any} */
 let barcodeHints = null;
 
 function resetBarcodeReaders() {
@@ -315,6 +357,7 @@ if (captureSupportNote) {
 }
 
 function showError(message) {
+  if (!errorContainer) return;
   errorContainer.textContent = message;
   errorContainer.classList.remove("hidden");
   errorContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -324,13 +367,18 @@ function showError(message) {
 }
 
 function hideError() {
+  if (!errorContainer) return;
   errorContainer.classList.add("hidden");
 }
 
 function resetState() {
-  resultContainer.classList.add("hidden");
+  if (resultContainer) {
+    resultContainer.classList.add("hidden");
+  }
   decodedValues = [];
-  resultList.innerHTML = "";
+  if (resultList) {
+    resultList.innerHTML = "";
+  }
   hideError();
   stopCapture();
 }
@@ -353,6 +401,10 @@ function setTemporaryButtonMessage(button, message) {
   }, 2000);
 }
 
+/**
+ * @param {string} value
+ * @param {HTMLButtonElement} button
+ */
 async function copyToClipboard(value, button) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
@@ -369,7 +421,13 @@ async function copyToClipboard(value, button) {
   }
 }
 
-async function shareContent(value, button, { isUrl } = {}) {
+/**
+ * @param {string} value
+ * @param {HTMLButtonElement} button
+ * @param {{ isUrl?: boolean }} [options]
+ */
+async function shareContent(value, button, options = {}) {
+  const { isUrl = false } = options;
   if (navigator.share) {
     try {
       const shareData = isUrl ? { url: value, text: value } : { text: value };
@@ -395,6 +453,9 @@ function isHttpUrl(value) {
 }
 
 function displayResults(values) {
+  if (!resultList || !resultContainer) {
+    return;
+  }
   decodedValues = values.slice();
   resultList.innerHTML = "";
 
@@ -460,15 +521,21 @@ function scanQRCodesFromCanvas(canvas) {
   }
 
   const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return [];
+  }
   const imageData = ctx.getImageData(0, 0, width, height);
   const workingData = new Uint8ClampedArray(imageData.data);
   const results = [];
   const margin = 6;
 
   for (;;) {
-    const code = jsQR(workingData, width, height, {
-      inversionAttempts: "attemptBoth",
-    });
+    const code =
+      /** @type {{ data?: string; location?: any } | null} */ (
+        jsQR(workingData, width, height, {
+          inversionAttempts: "attemptBoth",
+        })
+      );
 
     if (!code || !code.data) {
       break;
@@ -534,6 +601,7 @@ function scanQRCodesFromCanvas(canvas) {
 }
 
 function getMultipleBarcodeReader() {
+  /** @type {any} */
   const ZXingLib = window.ZXing;
   if (!ZXingLib) {
     return null;
@@ -611,7 +679,12 @@ function getMultipleBarcodeReader() {
   return multipleBarcodeReader;
 }
 
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @returns {string[]}
+ */
 function scanBarcodesFromCanvas(canvas) {
+  /** @type {any} */
   const ZXingLib = window.ZXing;
   const reader = getMultipleBarcodeReader();
 
@@ -894,12 +967,20 @@ function stopCapture() {
     clearInterval(scanInterval);
     scanInterval = null;
   }
-  videoContainer.classList.add("hidden");
-  videoPreview.srcObject = null;
+  if (videoContainer) {
+    videoContainer.classList.add("hidden");
+  }
+  if (videoPreview) {
+    videoPreview.srcObject = null;
+  }
 }
 
 function startScreenCapture() {
   if (stream) {
+    return;
+  }
+
+  if (!canvasPreview || !videoPreview || !videoContainer) {
     return;
   }
 
@@ -922,6 +1003,9 @@ function startScreenCapture() {
         scanInterval = setInterval(() => {
           if (videoPreview.readyState === videoPreview.HAVE_ENOUGH_DATA) {
             const ctx = canvasPreview.getContext("2d");
+            if (!ctx) {
+              return;
+            }
             ctx.drawImage(
               videoPreview,
               0,
@@ -962,7 +1046,11 @@ function startScreenCapture() {
 }
 
 function handleFileUpload(event) {
-  const file = event.target.files[0];
+  if (!fileInput) {
+    return;
+  }
+  const target = /** @type {HTMLInputElement} */ (event.target);
+  const file = target.files && target.files[0];
   if (!file) {
     return;
   }
@@ -975,6 +1063,11 @@ function handleFileUpload(event) {
       canvas.width = img.width;
       canvas.height = img.height;
       const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        showError("Failed to read canvas context.");
+        fileInput.value = "";
+        return;
+      }
       ctx.drawImage(img, 0, 0);
 
       const values = scanCodesFromCanvas(canvas);
@@ -993,7 +1086,13 @@ function handleFileUpload(event) {
       showError("Failed to load image. Please try another file.");
       fileInput.value = "";
     };
-    img.src = e.target.result;
+    const result = e.target?.result;
+    if (typeof result !== "string") {
+      showError("Failed to decode image content.");
+      fileInput.value = "";
+      return;
+    }
+    img.src = result;
   };
   reader.onerror = () => {
     showError("Failed to read file. Please try another file.");
@@ -1002,31 +1101,42 @@ function handleFileUpload(event) {
   reader.readAsDataURL(file);
 }
 
-stopCaptureBtn.addEventListener("click", stopCapture);
-fileInput.addEventListener("change", handleFileUpload);
-resetBtn.addEventListener("click", resetState);
+if (stopCaptureBtn) {
+  stopCaptureBtn.addEventListener("click", stopCapture);
+}
+if (fileInput) {
+  fileInput.addEventListener("change", handleFileUpload);
+}
+if (resetBtn) {
+  resetBtn.addEventListener("click", resetState);
+}
 
 if (captureBtn) {
   captureBtn.addEventListener("click", startScreenCapture);
 }
 
 document.addEventListener("keydown", (event) => {
+  const target = event.target;
+  const isInteractiveTarget =
+    target instanceof Element &&
+    target.matches("button, input, textarea");
   if (event.code === "Escape") {
     if (stream) {
       event.preventDefault();
       stopCapture();
-    } else if (!resultContainer.classList.contains("hidden")) {
+    } else if (resultContainer && !resultContainer.classList.contains("hidden")) {
       event.preventDefault();
       resetState();
     }
   } else if (
     event.code === "Space" &&
-    !event.target.matches("button, input, textarea")
+    captureBtn &&
+    !isInteractiveTarget
   ) {
     if (stream) {
       event.preventDefault();
       stopCapture();
-    } else if (captureBtn) {
+    } else {
       event.preventDefault();
       captureBtn.focus();
       startScreenCapture();
@@ -1034,13 +1144,16 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-fileInput.addEventListener("keydown", (event) => {
-  if (event.code === "Enter" || event.code === "Space") {
-    event.preventDefault();
-    fileInput.click();
-  }
-});
+if (fileInput) {
+  fileInput.addEventListener("keydown", (event) => {
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      fileInput.click();
+    }
+  });
+}
 
+/** @type {RendererTestHooks} */
 const testHooks = {
   copyToClipboard,
   displayResults,
