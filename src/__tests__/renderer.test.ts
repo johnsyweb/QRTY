@@ -1,6 +1,9 @@
 /* eslint-env jest */
 
-import type { RendererTestHooks } from "../types/renderer-hooks";
+import type {
+  RendererTestHooks,
+  ZXingModule,
+} from "../types/renderer-hooks";
 
 function createImageDataStub(
   data: Uint8ClampedArray,
@@ -187,29 +190,34 @@ describe("renderer helpers", () => {
       DecodeHintType: {
         POSSIBLE_FORMATS: "POSSIBLE_FORMATS",
         TRY_HARDER: "TRY_HARDER",
-      },
+      } as any,
       BarcodeFormat: {
         CODE_128: "CODE_128",
-      },
+      } as any,
       HybridBinarizer: jest
         .fn()
-        .mockImplementation(function HybridBinarizer(source) {
+        .mockImplementation(function HybridBinarizer(this: any, source: any) {
           this.source = source;
         }),
       BinaryBitmap: jest
         .fn()
-        .mockImplementation(function BinaryBitmap(binarizer) {
+        .mockImplementation(function BinaryBitmap(this: any, binarizer: any) {
           this.binarizer = binarizer;
         }),
       RGBLuminanceSource: jest
         .fn()
-        .mockImplementation(function RGBLuminanceSource(data, width, height) {
+        .mockImplementation(function RGBLuminanceSource(
+          this: any,
+          data: Uint8ClampedArray,
+          width: number,
+          height: number
+        ) {
           this.data = data;
           this.width = width;
           this.height = height;
         }),
       NotFoundException: class NotFoundException extends Error {},
-    };
+    } as unknown as ZXingModule;
 
     const width = 800;
     const height = 800;
@@ -247,7 +255,7 @@ describe("renderer helpers", () => {
     const values = hooks.scanBarcodesFromCanvas(canvasMock);
 
     expect(values).toEqual(["1234567890"]);
-    const zxMock = window.ZXing as {
+    const zxMock = window.ZXing as unknown as {
       RGBLuminanceSource: jest.Mock;
     };
 

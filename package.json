@@ -8,6 +8,7 @@
     "lint": "eslint src/**/*.js",
     "format": "prettier --write \"src/**/*.{js,html,css}\" \"scripts/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.{js,html,css}\" \"scripts/**/*.js\"",
+    "typecheck": "tsc --noEmit",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og-image": "node scripts/generate-og-image.js",
     "generate:qr-code": "node scripts/generate-qr-code.js",
