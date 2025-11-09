@@ -1,13 +1,13 @@
 # QRTY
 
-QR code decoder using screen capture or image upload. Capture a section of your screen to automatically scan QR codes, or upload an image file.
+QR and barcode decoder using screen capture or image upload. Capture a section of your screen to automatically scan codes, or upload an image file.
 
 ## Features
 
-- Capture your screen to automatically detect QR codes
-- Upload image files containing QR codes
-- Automatically decode multiple QR codes and extract each URL
-- Open or share decoded URLs (with clipboard fallback)
+- Capture your screen to automatically detect QR codes and barcodes
+- Upload image files containing QR or barcode data
+- Automatically decode multiple codes in a single capture or image
+- Open or share decoded URLs (with clipboard fallback) or copy any decoded text
 - Fully keyboard accessible
 - Minimal interface that doesn't block QR codes
 - Styled to match johnsy.com design
@@ -53,9 +53,9 @@ pnpm install
 
 The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 
-1. Click "Upload Image" to upload an image file containing a QR code
-2. The decoded URL will be displayed automatically
-3. Click "Copy URL" or "Open URL" to use the decoded URL
+1. Click "Upload Image" to upload an image file containing a QR code or barcode
+2. Any decoded values will be displayed automatically
+3. Use the action buttons to open, share, or copy decoded values
 4. Press `Escape` to reset the results view
 5. You can also click "Capture Screen" in desktop browsers that support screen sharing; unsupported browsers will show an error and you can fall back to the upload option
 
@@ -85,6 +85,7 @@ The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
   - Also binds to your local network (e.g. `http://<your-ip>:8000/QRTY/`) so you can test on phones/tablets
 - `pnpm run lint` - Run ESLint
 - `pnpm run format` - Format code with Prettier
+- `pnpm run typecheck` - Run TypeScript checks (includes renderer helpers and build scripts)
 - `pnpm run generate:icons` - Generate icon files from SVG
 - `pnpm run generate:og-image` - Generate OpenGraph image
 - `pnpm run generate:qr-code` - Generate QR code image for the site URL
@@ -114,7 +115,7 @@ To manually deploy to `johnsy.com/QRTY/`:
 2. Upload the contents of the `src/` directory to the web server at `/QRTY/`
 3. Ensure the `.nojekyll` file is included (prevents Jekyll processing on GitHub Pages)
 
-The app uses only static files (HTML, CSS, JavaScript) and a CDN-hosted library (jsQR), so no server-side processing is required.
+The app uses only static files (HTML, CSS, JavaScript) and CDN-hosted libraries (jsQR and ZXing), so no server-side processing is required.
 
 ## License
 
