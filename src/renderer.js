@@ -72,6 +72,10 @@ const BARCODE_MAX_SCALE_FACTOR = 8;
 const BARCODE_MIN_QUIET_ZONE = 24;
 const BARCODE_THICKENING_RATIO_THRESHOLD = 1.5;
 
+/**
+ * @param {HTMLCanvasElement | OffscreenCanvas | null} canvas
+ * @returns {CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null}
+ */
 function get2dContext(canvas) {
   if (!canvas || typeof canvas.getContext !== "function") {
     return null;
@@ -82,6 +86,14 @@ function get2dContext(canvas) {
   );
 }
 
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} scaleFactor
+ * @returns {{
+ *   canvas: HTMLCanvasElement;
+ *   context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+ * }}
+ */
 function getScaledCanvas(canvas, scaleFactor) {
   if (
     scaleFactor <= 1 ||
@@ -115,6 +127,13 @@ function getScaledCanvas(canvas, scaleFactor) {
   return { canvas: scaledCanvas, context: scaledContext };
 }
 
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @returns {{
+ *   canvas: HTMLCanvasElement;
+ *   context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+ * }}
+ */
 function addQuietZone(canvas) {
   if (
     !canvas ||
@@ -149,6 +168,9 @@ function addQuietZone(canvas) {
   return { canvas: paddedCanvas, context: paddedContext };
 }
 
+/**
+ * @param {ImageData} imageData
+ */
 function normaliseImageData(imageData) {
   if (!imageData || !imageData.data) {
     return;
@@ -187,6 +209,11 @@ function normaliseImageData(imageData) {
   }
 }
 
+/**
+ * @param {Uint32Array} histogram
+ * @param {number} totalPixels
+ * @returns {number}
+ */
 function computeOtsuThreshold(histogram, totalPixels) {
   if (!totalPixels) {
     return 127;
@@ -234,6 +261,9 @@ function computeOtsuThreshold(histogram, totalPixels) {
   return bestThreshold;
 }
 
+/**
+ * @param {ImageData} imageData
+ */
 function binariseImageData(imageData) {
   if (!imageData || !imageData.data) {
     return;
@@ -258,6 +288,9 @@ function binariseImageData(imageData) {
   }
 }
 
+/**
+ * @param {ImageData} imageData
+ */
 function thickenLinearFeatures(imageData) {
   if (!imageData || !imageData.data) {
     return;
@@ -289,6 +322,10 @@ function thickenLinearFeatures(imageData) {
   }
 }
 
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @returns {{ data: Uint8ClampedArray; width: number; height: number } | null}
+ */
 function getBarcodeImagePayload(canvas) {
   if (!canvas) {
     return null;
@@ -516,6 +553,10 @@ function displayResults(values) {
   hideError();
 }
 
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @returns {string[]}
+ */
 function scanQRCodesFromCanvas(canvas) {
   const { width, height } = canvas;
   if (!width || !height) {
@@ -950,11 +991,18 @@ function scanBarcodesFromCanvas(canvas) {
   }
 }
 
+/**
+ * @param {...string[]} lists
+ * @returns {string[]}
+ */
 function mergeUniqueValues(...lists) {
   const values = [];
   const seen = new Set();
 
   lists.forEach((entries) => {
+    if (!entries) {
+      return;
+    }
     entries.forEach((value) => {
       if (!value || seen.has(value)) {
         return;
