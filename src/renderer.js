@@ -5,14 +5,309 @@ const videoPreview = document.getElementById("video-preview");
 const canvasPreview = document.getElementById("canvas-preview");
 const stopCaptureBtn = document.getElementById("stop-capture-btn");
 const resultContainer = document.getElementById("result-container");
-const urlDisplay = document.getElementById("url-display");
+const resultList = document.getElementById("result-list");
 const resetBtn = document.getElementById("reset-btn");
 const errorContainer = document.getElementById("error-container");
 const captureSupportNote = document.getElementById("capture-support-note");
 
 let stream = null;
 let scanInterval = null;
-let decodedUrls = [];
+let decodedValues = [];
+let multiFormatReader = null;
+let multipleBarcodeReader = null;
+let barcodeHints = null;
+
+function resetBarcodeReaders() {
+  multiFormatReader = null;
+  multipleBarcodeReader = null;
+  barcodeHints = null;
+}
+
+const BARCODE_TARGET_MIN_DIMENSION = 600;
+const BARCODE_MAX_SCALE_FACTOR = 8;
+const BARCODE_MIN_QUIET_ZONE = 24;
+const BARCODE_THICKENING_RATIO_THRESHOLD = 1.5;
+
+function get2dContext(canvas) {
+  if (!canvas || typeof canvas.getContext !== "function") {
+    return null;
+  }
+  return (
+    canvas.getContext("2d", { willReadFrequently: true }) ||
+    canvas.getContext("2d")
+  );
+}
+
+function getScaledCanvas(canvas, scaleFactor) {
+  if (
+    scaleFactor <= 1 ||
+    typeof document === "undefined" ||
+    typeof document.createElement !== "function"
+  ) {
+    return { canvas, context: get2dContext(canvas) };
+  }
+
+  const scaledCanvas = document.createElement("canvas");
+  scaledCanvas.width = Math.round(canvas.width * scaleFactor);
+  scaledCanvas.height = Math.round(canvas.height * scaleFactor);
+
+  const scaledContext = get2dContext(scaledCanvas);
+  if (!scaledContext) {
+    return { canvas, context: get2dContext(canvas) };
+  }
+
+  if (typeof scaledContext.imageSmoothingEnabled === "boolean") {
+    scaledContext.imageSmoothingEnabled = false;
+  }
+
+  scaledContext.drawImage(
+    canvas,
+    0,
+    0,
+    scaledCanvas.width,
+    scaledCanvas.height
+  );
+
+  return { canvas: scaledCanvas, context: scaledContext };
+}
+
+function addQuietZone(canvas) {
+  if (
+    !canvas ||
+    typeof document === "undefined" ||
+    typeof document.createElement !== "function"
+  ) {
+    return { canvas, context: get2dContext(canvas) };
+  }
+
+  const quietZone = Math.max(
+    BARCODE_MIN_QUIET_ZONE,
+    Math.round(Math.min(canvas.width, canvas.height) * 0.1)
+  );
+
+  const paddedCanvas = document.createElement("canvas");
+  paddedCanvas.width = canvas.width + quietZone * 2;
+  paddedCanvas.height = canvas.height + quietZone * 2;
+
+  const paddedContext = get2dContext(paddedCanvas);
+  if (!paddedContext) {
+    return { canvas, context: get2dContext(canvas) };
+  }
+
+  if (typeof paddedContext.imageSmoothingEnabled === "boolean") {
+    paddedContext.imageSmoothingEnabled = false;
+  }
+
+  paddedContext.fillStyle = "#ffffff";
+  paddedContext.fillRect(0, 0, paddedCanvas.width, paddedCanvas.height);
+  paddedContext.drawImage(canvas, quietZone, quietZone);
+
+  return { canvas: paddedCanvas, context: paddedContext };
+}
+
+function normaliseImageData(imageData) {
+  if (!imageData || !imageData.data) {
+    return;
+  }
+
+  const { data } = imageData;
+  let minLuminance = 255;
+  let maxLuminance = 0;
+
+  for (let index = 0; index < data.length; index += 4) {
+    const luminance =
+      data[index] * 0.2126 +
+      data[index + 1] * 0.7152 +
+      data[index + 2] * 0.0722;
+    if (luminance < minLuminance) {
+      minLuminance = luminance;
+    }
+    if (luminance > maxLuminance) {
+      maxLuminance = luminance;
+    }
+  }
+
+  const range = maxLuminance - minLuminance || 1;
+
+  for (let index = 0; index < data.length; index += 4) {
+    const luminance =
+      data[index] * 0.2126 +
+      data[index + 1] * 0.7152 +
+      data[index + 2] * 0.0722;
+    const normalised = Math.round(((luminance - minLuminance) / range) * 255);
+    const clamped = Math.max(0, Math.min(255, normalised));
+    data[index] = clamped;
+    data[index + 1] = clamped;
+    data[index + 2] = clamped;
+    data[index + 3] = 255;
+  }
+}
+
+function computeOtsuThreshold(histogram, totalPixels) {
+  if (!totalPixels) {
+    return 127;
+  }
+
+  let sumAll = 0;
+  for (let index = 0; index < 256; index += 1) {
+    sumAll += index * histogram[index];
+  }
+
+  let sumBackground = 0;
+  let weightBackground = 0;
+  let bestThreshold = 127;
+  let maxVariance = 0;
+
+  for (let threshold = 0; threshold < 256; threshold += 1) {
+    weightBackground += histogram[threshold];
+    if (weightBackground === 0) {
+      continue;
+    }
+
+    const weightForeground = totalPixels - weightBackground;
+    if (weightForeground === 0) {
+      break;
+    }
+
+    sumBackground += threshold * histogram[threshold];
+
+    const meanBackground = sumBackground / weightBackground;
+    const meanForeground =
+      (sumAll - sumBackground) / Math.max(weightForeground, 1);
+
+    const betweenClassVariance =
+      weightBackground *
+      weightForeground *
+      (meanBackground - meanForeground) *
+      (meanBackground - meanForeground);
+
+    if (betweenClassVariance > maxVariance) {
+      maxVariance = betweenClassVariance;
+      bestThreshold = threshold;
+    }
+  }
+
+  return bestThreshold;
+}
+
+function binariseImageData(imageData) {
+  if (!imageData || !imageData.data) {
+    return;
+  }
+
+  const { data, width, height } = imageData;
+  const totalPixels = width * height;
+  const histogram = new Uint32Array(256);
+
+  for (let index = 0; index < data.length; index += 4) {
+    histogram[data[index]] += 1;
+  }
+
+  const threshold = computeOtsuThreshold(histogram, totalPixels);
+
+  for (let index = 0; index < data.length; index += 4) {
+    const value = data[index] <= threshold ? 0 : 255;
+    data[index] = value;
+    data[index + 1] = value;
+    data[index + 2] = value;
+    data[index + 3] = 255;
+  }
+}
+
+function thickenLinearFeatures(imageData) {
+  if (!imageData || !imageData.data) {
+    return;
+  }
+
+  const { data, width, height } = imageData;
+  const source = new Uint8ClampedArray(data);
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = (y * width + x) * 4;
+      if (source[index] !== 0) {
+        continue;
+      }
+
+      for (let offset = -1; offset <= 1; offset += 1) {
+        const neighbourX = x + offset;
+        if (neighbourX < 0 || neighbourX >= width) {
+          continue;
+        }
+
+        const neighbourIndex = (y * width + neighbourX) * 4;
+        data[neighbourIndex] = 0;
+        data[neighbourIndex + 1] = 0;
+        data[neighbourIndex + 2] = 0;
+        data[neighbourIndex + 3] = 255;
+      }
+    }
+  }
+}
+
+function getBarcodeImagePayload(canvas) {
+  if (!canvas) {
+    return null;
+  }
+
+  const baseContext = get2dContext(canvas);
+  if (!baseContext) {
+    return null;
+  }
+
+  const { width, height } = canvas;
+  if (!width || !height) {
+    return null;
+  }
+
+  const minDimension = Math.min(width, height);
+  const scaleFactor =
+    minDimension > 0 && minDimension < BARCODE_TARGET_MIN_DIMENSION
+      ? Math.min(
+          BARCODE_MAX_SCALE_FACTOR,
+          Math.max(1, Math.ceil(BARCODE_TARGET_MIN_DIMENSION / minDimension))
+        )
+      : 1;
+
+  const { canvas: workingCanvas, context: workingContext } = getScaledCanvas(
+    canvas,
+    scaleFactor
+  );
+
+  if (!workingContext) {
+    return null;
+  }
+
+  const { canvas: quietCanvas, context: quietContext } =
+    addQuietZone(workingCanvas);
+
+  if (!quietContext) {
+    return null;
+  }
+
+  const imageData = quietContext.getImageData(
+    0,
+    0,
+    quietCanvas.width,
+    quietCanvas.height
+  );
+
+  normaliseImageData(imageData);
+  binariseImageData(imageData);
+
+  if (
+    quietCanvas.width / Math.max(quietCanvas.height, 1) >=
+    BARCODE_THICKENING_RATIO_THRESHOLD
+  ) {
+    thickenLinearFeatures(imageData);
+  }
+
+  return {
+    data: imageData.data,
+    width: quietCanvas.width,
+    height: quietCanvas.height,
+  };
+}
 
 if (captureSupportNote) {
   captureSupportNote.textContent =
@@ -34,13 +329,13 @@ function hideError() {
 
 function resetState() {
   resultContainer.classList.add("hidden");
-  decodedUrls = [];
-  urlDisplay.innerHTML = "";
+  decodedValues = [];
+  resultList.innerHTML = "";
   hideError();
   stopCapture();
 }
 
-function urlsAreEqual(a, b) {
+function valuesAreEqual(a, b) {
   if (a.length !== b.length) {
     return false;
   }
@@ -99,13 +394,13 @@ function isHttpUrl(value) {
   }
 }
 
-function displayUrls(values) {
-  decodedUrls = values.slice();
-  urlDisplay.innerHTML = "";
+function displayResults(values) {
+  decodedValues = values.slice();
+  resultList.innerHTML = "";
 
   values.forEach((value) => {
     const item = document.createElement("div");
-    item.className = "url-item";
+    item.className = "result-item";
 
     const isUrl = isHttpUrl(value);
 
@@ -116,17 +411,17 @@ function displayUrls(values) {
       link.textContent = value;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.className = "url-link";
+      link.className = "result-link";
       primaryContent = link;
     } else {
       const text = document.createElement("pre");
       text.textContent = value;
-      text.className = "url-text";
+      text.className = "result-text";
       primaryContent = text;
     }
 
     const actions = document.createElement("div");
-    actions.className = "url-actions";
+    actions.className = "result-actions";
 
     if (isUrl) {
       const openButton = document.createElement("button");
@@ -151,7 +446,7 @@ function displayUrls(values) {
 
     item.appendChild(primaryContent);
     item.appendChild(actions);
-    urlDisplay.appendChild(item);
+    resultList.appendChild(item);
   });
 
   resultContainer.classList.remove("hidden");
@@ -238,6 +533,358 @@ function scanQRCodesFromCanvas(canvas) {
   return results.map((item) => item.data);
 }
 
+function getMultipleBarcodeReader() {
+  const ZXingLib = window.ZXing;
+  if (!ZXingLib) {
+    return null;
+  }
+
+  if (multipleBarcodeReader) {
+    return multipleBarcodeReader;
+  }
+
+  const requiredConstructors = [
+    "MultiFormatReader",
+    "DecodeHintType",
+    "BarcodeFormat",
+    "HybridBinarizer",
+    "BinaryBitmap",
+    "RGBLuminanceSource",
+  ];
+
+  const hasAllConstructors = requiredConstructors.every(
+    (name) => typeof ZXingLib[name] === "function" || ZXingLib[name]
+  );
+
+  if (!hasAllConstructors) {
+    return null;
+  }
+
+  const formats = [
+    ZXingLib.BarcodeFormat.CODE_39,
+    ZXingLib.BarcodeFormat.CODE_93,
+    ZXingLib.BarcodeFormat.CODE_128,
+    ZXingLib.BarcodeFormat.EAN_8,
+    ZXingLib.BarcodeFormat.EAN_13,
+    ZXingLib.BarcodeFormat.UPC_A,
+    ZXingLib.BarcodeFormat.UPC_E,
+    ZXingLib.BarcodeFormat.ITF,
+    ZXingLib.BarcodeFormat.CODABAR,
+    ZXingLib.BarcodeFormat.DATA_MATRIX,
+    ZXingLib.BarcodeFormat.PDF_417,
+    ZXingLib.BarcodeFormat.AZTEC,
+  ].filter(Boolean);
+
+  const hints = new Map();
+  if (formats.length > 0) {
+    hints.set(ZXingLib.DecodeHintType.POSSIBLE_FORMATS, formats);
+  }
+  hints.set(ZXingLib.DecodeHintType.TRY_HARDER, true);
+
+  multiFormatReader = new ZXingLib.MultiFormatReader();
+  multiFormatReader.setHints(hints);
+  barcodeHints = hints;
+
+  if (typeof ZXingLib.GenericMultipleBarcodeReader === "function") {
+    multipleBarcodeReader = new ZXingLib.GenericMultipleBarcodeReader(
+      multiFormatReader
+    );
+  } else {
+    multipleBarcodeReader = {
+      decodeMultiple(binaryBitmap) {
+        try {
+          const result = multiFormatReader.decodeWithState(binaryBitmap);
+          return result ? [result] : [];
+        } catch (error) {
+          if (
+            ZXingLib.NotFoundException &&
+            error instanceof ZXingLib.NotFoundException
+          ) {
+            return [];
+          }
+          throw error;
+        }
+      },
+    };
+  }
+
+  return multipleBarcodeReader;
+}
+
+function scanBarcodesFromCanvas(canvas) {
+  const ZXingLib = window.ZXing;
+  const reader = getMultipleBarcodeReader();
+
+  if (!ZXingLib || !reader) {
+    return [];
+  }
+
+  const { width, height } = canvas;
+  if (!width || !height) {
+    return [];
+  }
+
+  const payload = getBarcodeImagePayload(canvas);
+
+  if (!payload) {
+    return [];
+  }
+
+  const { data, width: processedWidth, height: processedHeight } = payload;
+
+  try {
+    const createLuminanceSource = () =>
+      new ZXingLib.RGBLuminanceSource(
+        new Uint8ClampedArray(data),
+        processedWidth,
+        processedHeight
+      );
+
+    const decodeWithBinaryBitmap = (binaryBitmap) => {
+      let results = [];
+
+      try {
+        results = reader.decodeMultiple(binaryBitmap) || [];
+      } catch (error) {
+        if (
+          !(
+            ZXingLib.NotFoundException &&
+            error instanceof ZXingLib.NotFoundException
+          )
+        ) {
+          throw error;
+        }
+      }
+
+      if ((!results || results.length === 0) && multiFormatReader) {
+        try {
+          const singleResult = multiFormatReader.decodeWithState(binaryBitmap);
+          if (singleResult) {
+            results = [singleResult];
+          }
+        } catch (singleError) {
+          if (
+            !(
+              ZXingLib.NotFoundException &&
+              singleError instanceof ZXingLib.NotFoundException
+            )
+          ) {
+            throw singleError;
+          }
+        }
+      }
+
+      if (multiFormatReader && typeof multiFormatReader.reset === "function") {
+        multiFormatReader.reset();
+      }
+
+      return results || [];
+    };
+
+    const decodeWithBinarizer = (BinarizerClass) => {
+      if (typeof BinarizerClass !== "function") {
+        return [];
+      }
+
+      const luminanceSource = createLuminanceSource();
+      const binaryBitmap = new ZXingLib.BinaryBitmap(
+        new BinarizerClass(luminanceSource)
+      );
+
+      return decodeWithBinaryBitmap(binaryBitmap);
+    };
+
+    let results = decodeWithBinarizer(ZXingLib.HybridBinarizer);
+
+    if (
+      (!results || results.length === 0) &&
+      typeof ZXingLib.GlobalHistogramBinarizer === "function"
+    ) {
+      results = decodeWithBinarizer(ZXingLib.GlobalHistogramBinarizer);
+    }
+
+    if (
+      (!results || results.length === 0) &&
+      barcodeHints instanceof Map &&
+      ZXingLib.DecodeHintType &&
+      typeof ZXingLib.DecodeHintType.PURE_BARCODE !== "undefined"
+    ) {
+      const pureHints = new Map(barcodeHints);
+      pureHints.set(ZXingLib.DecodeHintType.PURE_BARCODE, true);
+
+      const pureReader = new ZXingLib.MultiFormatReader();
+      pureReader.setHints(pureHints);
+
+      try {
+        const pureBinaryBitmap = new ZXingLib.BinaryBitmap(
+          new ZXingLib.GlobalHistogramBinarizer(createLuminanceSource())
+        );
+        const pureResult = pureReader.decodeWithState(pureBinaryBitmap);
+        if (pureResult) {
+          results = [pureResult];
+        }
+      } catch (pureError) {
+        if (
+          !(
+            ZXingLib.NotFoundException &&
+            pureError instanceof ZXingLib.NotFoundException
+          )
+        ) {
+          throw pureError;
+        }
+      } finally {
+        if (typeof pureReader.reset === "function") {
+          pureReader.reset();
+        }
+      }
+    }
+
+    if (
+      (!results || results.length === 0) &&
+      typeof ZXingLib.Code128Reader === "function" &&
+      typeof ZXingLib.BitArray === "function"
+    ) {
+      const hintsForRows =
+        barcodeHints instanceof Map ? new Map(barcodeHints) : new Map();
+      if (
+        ZXingLib.DecodeHintType &&
+        typeof ZXingLib.DecodeHintType.TRY_HARDER !== "undefined"
+      ) {
+        hintsForRows.set(ZXingLib.DecodeHintType.TRY_HARDER, true);
+      }
+
+      const rowReaders = [new ZXingLib.Code128Reader()];
+
+      const rowsToSample = [];
+      const maxSamples = Math.min(processedHeight, 15);
+      const centerRow = Math.floor(processedHeight / 2);
+      rowsToSample.push(centerRow);
+      const rowStep = Math.max(
+        1,
+        Math.floor(processedHeight / (maxSamples + 1))
+      );
+      for (
+        let offset = rowStep;
+        offset < processedHeight && rowsToSample.length < maxSamples;
+        offset += rowStep
+      ) {
+        const upRow = centerRow - offset;
+        const downRow = centerRow + offset;
+        if (upRow >= 0) {
+          rowsToSample.push(upRow);
+        }
+        if (downRow < processedHeight) {
+          rowsToSample.push(downRow);
+        }
+      }
+
+      const seenRows = new Set();
+      const rowResults = [];
+
+      for (let index = 0; index < rowsToSample.length; index += 1) {
+        const row = rowsToSample[index];
+        if (seenRows.has(row) || row < 0 || row >= processedHeight) {
+          continue;
+        }
+        seenRows.add(row);
+
+        const bitArray = new ZXingLib.BitArray(processedWidth);
+        for (let x = 0; x < processedWidth; x += 1) {
+          const pixel = data[(row * processedWidth + x) * 4];
+          if (pixel === 0) {
+            bitArray.set(x);
+          }
+        }
+
+        for (
+          let readerIndex = 0;
+          readerIndex < rowReaders.length;
+          readerIndex += 1
+        ) {
+          const rowReader = rowReaders[readerIndex];
+
+          try {
+            const rowResult = rowReader.decodeRow(row, bitArray, hintsForRows);
+            if (rowResult) {
+              rowResults.push(rowResult);
+              break;
+            }
+          } catch (rowError) {
+            if (
+              !(
+                (ZXingLib.NotFoundException &&
+                  rowError instanceof ZXingLib.NotFoundException) ||
+                (ZXingLib.FormatException &&
+                  rowError instanceof ZXingLib.FormatException) ||
+                (ZXingLib.ChecksumException &&
+                  rowError instanceof ZXingLib.ChecksumException)
+              )
+            ) {
+              throw rowError;
+            }
+          } finally {
+            if (typeof rowReader.reset === "function") {
+              rowReader.reset();
+            }
+          }
+        }
+
+        if (rowResults.length > 0) {
+          results = rowResults;
+          break;
+        }
+      }
+    }
+
+    const uniqueValues = [];
+    results.forEach((result) => {
+      const text = result.getText ? result.getText().trim() : "";
+      if (text && !uniqueValues.includes(text)) {
+        uniqueValues.push(text);
+      }
+    });
+
+    return uniqueValues;
+  } catch (error) {
+    if (
+      ZXingLib.NotFoundException &&
+      error instanceof ZXingLib.NotFoundException
+    ) {
+      return [];
+    }
+    console.error("Barcode decoding failed", error);
+    return [];
+  } finally {
+    if (multiFormatReader && typeof multiFormatReader.reset === "function") {
+      multiFormatReader.reset();
+    }
+  }
+}
+
+function mergeUniqueValues(...lists) {
+  const values = [];
+  const seen = new Set();
+
+  lists.forEach((entries) => {
+    entries.forEach((value) => {
+      if (!value || seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+      values.push(value);
+    });
+  });
+
+  return values;
+}
+
+function scanCodesFromCanvas(canvas) {
+  return mergeUniqueValues(
+    scanQRCodesFromCanvas(canvas),
+    scanBarcodesFromCanvas(canvas)
+  );
+}
+
 function stopCapture() {
   if (stream) {
     stream.getTracks().forEach((track) => track.stop());
@@ -283,9 +930,9 @@ function startScreenCapture() {
               canvasPreview.height
             );
 
-            const values = scanQRCodesFromCanvas(canvasPreview);
-            if (values.length > 0 && !urlsAreEqual(values, decodedUrls)) {
-              displayUrls(values);
+            const values = scanCodesFromCanvas(canvasPreview);
+            if (values.length > 0 && !valuesAreEqual(values, decodedValues)) {
+              displayResults(values);
               stopCapture();
             }
           }
@@ -330,13 +977,15 @@ function handleFileUpload(event) {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
 
-      const values = scanQRCodesFromCanvas(canvas);
+      const values = scanCodesFromCanvas(canvas);
 
       if (values.length > 0) {
-        displayUrls(values);
+        displayResults(values);
         fileInput.value = "";
       } else {
-        showError("No QR code found in image. Please try another image.");
+        showError(
+          "No QR codes or barcodes found in the image. Please try another image."
+        );
         fileInput.value = "";
       }
     };
@@ -391,3 +1040,23 @@ fileInput.addEventListener("keydown", (event) => {
     fileInput.click();
   }
 });
+
+const testHooks = {
+  copyToClipboard,
+  displayResults,
+  getMultipleBarcodeReader,
+  isHttpUrl,
+  mergeUniqueValues,
+  resetBarcodeReaders,
+  scanBarcodesFromCanvas,
+  scanCodesFromCanvas,
+  scanQRCodesFromCanvas,
+  shareContent,
+  valuesAreEqual,
+};
+
+if (typeof window !== "undefined") {
+  window.__QRTY_TEST_HOOKS__ = testHooks;
+} else if (typeof globalThis !== "undefined") {
+  globalThis.__QRTY_TEST_HOOKS__ = testHooks;
+}
