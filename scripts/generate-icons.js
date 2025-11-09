@@ -1,7 +1,13 @@
+// @ts-check
+
 const { chromium } = require("playwright");
 const { readFileSync, writeFileSync } = require("fs");
 const { join } = require("path");
 
+/**
+ * Generates favicon and touch icons from the base SVG asset.
+ * @returns {Promise<void>}
+ */
 async function generateIcons() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
@@ -9,6 +15,7 @@ async function generateIcons() {
   const svgPath = join(process.cwd(), "src/icon.svg");
   const svgContent = readFileSync(svgPath, "utf-8");
 
+  /** @type {{ size: number; name: string }[]} */
   const sizes = [
     { size: 180, name: "apple-touch-icon.png" },
     { size: 192, name: "icon-192.png" },

@@ -1,6 +1,13 @@
+// @ts-check
+
 const { resolve } = require("path");
+/** @type {import("qrcode")} */
 const QRCode = require("qrcode");
 
+/**
+ * Generates the QRTY site QR code asset.
+ * @returns {Promise<void>}
+ */
 async function generateQRCode() {
   try {
     const url = "https://johnsy.com/QRTY/";

@@ -14,5 +14,9 @@
     "noEmit": true,
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*", "../parkrun/foretoken/src/utils/tokenGenerator.ts"]
+  "include": [
+    "src/**/*",
+    "scripts/**/*.js",
+    "../parkrun/foretoken/src/utils/tokenGenerator.ts"
+  ]
 }

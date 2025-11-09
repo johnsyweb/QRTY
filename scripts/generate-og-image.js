@@ -1,7 +1,12 @@
+// @ts-check
+
 const { chromium } = require("playwright");
 const { resolve } = require("path");
-const { readFileSync, writeFileSync } = require("fs");
 
+/**
+ * Captures the Open Graph preview image from the rendered index.html.
+ * @returns {Promise<void>}
+ */
 async function generateOgImage() {
   const browser = await chromium.launch();
   const page = await browser.newPage({
