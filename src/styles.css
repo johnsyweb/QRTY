@@ -108,14 +108,14 @@
   margin-bottom: 12px;
 }
 
-.url-display {
+.result-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 16px;
 }
 
-.url-item {
+.result-item {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -127,7 +127,7 @@
   padding: 12px;
 }
 
-.url-link {
+.result-link {
   flex: 1 1 240px;
   word-break: break-word;
   font-family: "Atkinson Hyperlegible Mono", Monaco, Courier, monospace;
@@ -135,13 +135,13 @@
   border: none;
 }
 
-.url-link:hover,
-.url-link:focus {
+.result-link:hover,
+.result-link:focus {
   background-color: #eee8d5;
   outline: none;
 }
 
-.url-text {
+.result-text {
   flex: 1 1 240px;
   word-break: break-word;
   font-family: "Atkinson Hyperlegible Mono", Monaco, Courier, monospace;
@@ -150,13 +150,13 @@
   white-space: pre-wrap;
 }
 
-.url-actions {
+.result-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.url-actions .action-btn {
+.result-actions .action-btn {
   min-width: auto;
   padding: 8px 18px;
   margin-bottom: 0;
