@@ -86,6 +86,7 @@ The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 - `pnpm run lint` - Run ESLint
 - `pnpm run format` - Format code with Prettier
 - `pnpm run typecheck` - Run TypeScript checks (includes renderer helpers and build scripts)
+- `pnpm run build:renderer` - Compile the TypeScript renderer to `src/renderer.js`
 - `pnpm run generate:icons` - Generate icon files from SVG
 - `pnpm run generate:og-image` - Generate OpenGraph image
 - `pnpm run generate:qr-code` - Generate QR code image for the site URL
