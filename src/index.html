@@ -3,30 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QRTY - QR Code Decoder | Scan QR Codes from Your Screen</title>
+    <title>QRTY - QR & Barcode Decoder | Scan Codes from Your Screen</title>
     <meta
       name="description"
-      content="Free QR code decoder. Capture a section of your screen to scan QR codes automatically, or upload an image. All processing happens in your browser—no data is sent to servers. Privacy-focused and open source."
+      content="Free QR and barcode decoder. Capture a section of your screen to scan codes automatically, or upload an image. All processing happens in your browser—no data is sent to servers. Privacy-focused and open source."
     />
     <meta
       name="keywords"
-      content="qr code decoder, qr code scanner, qr code reader, screen capture qr, privacy qr scanner, browser qr decoder"
+      content="qr code decoder, barcode scanner, qr code reader, screen capture qr, privacy qr scanner, browser barcode decoder"
     />
     <meta name="author" content="johnsy.com" />
     <link rel="canonical" href="https://johnsy.com/QRTY/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://johnsy.com/QRTY/" />
-    <meta property="og:title" content="QRTY - QR Code Decoder" />
+    <meta property="og:title" content="QRTY - QR & Barcode Decoder" />
     <meta
       property="og:description"
-      content="Free QR code decoder. Capture your screen or upload an image to scan QR codes. All processing happens locally in your browser."
+      content="Free QR and barcode decoder. Capture your screen or upload an image to scan codes. All processing happens locally in your browser."
     />
     <meta property="og:image" content="https://johnsy.com/QRTY/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="QRTY QR Code Decoder interface showing screen capture and QR code scanning"
+      content="QRTY code decoder interface showing screen capture and code scanning"
     />
     <link
       rel="icon"
@@ -78,8 +78,8 @@
     <header id="header">
       <h1><a href="/QRTY/">QRTY</a></h1>
       <p>
-        QR Code Decoder. Capture a section of your screen to scan QR codes, or
-        upload an image.
+        QR and barcode decoder. Capture a section of your screen to scan codes,
+        or upload an image.
       </p>
     </header>
 
@@ -88,11 +88,11 @@
         <div id="instructions" class="instructions">
           <p>
             Capture a section of your screen or upload an image file containing
-            the QR code you want to decode. The interface stays minimal so you
-            can easily copy the results.
+            the QR or barcode you want to decode. The interface stays minimal so
+            you can easily copy the results.
           </p>
           <p class="privacy-notice">
-            <strong>Privacy:</strong> All QR code processing happens entirely in
+            <strong>Privacy:</strong> All code processing happens entirely in
             your browser. No images, videos, or data are sent to any server or
             stored anywhere. Your privacy is protected.
           </p>
@@ -121,7 +121,7 @@
           <video id="video-preview" autoplay playsinline></video>
           <canvas id="canvas-preview"></canvas>
           <div class="control-group">
-            <p class="scanning-status">Scanning for QR codes...</p>
+            <p class="scanning-status">Scanning for QR codes and barcodes...</p>
             <button
               id="stop-capture-btn"
               class="action-btn secondary"
@@ -133,8 +133,8 @@
         </div>
 
         <div id="result-container" class="result-container hidden">
-          <h2>Decoded URLs:</h2>
-          <div id="url-display" class="url-display"></div>
+          <h2>Decoded results:</h2>
+          <div id="result-list" class="result-list"></div>
           <button
             id="reset-btn"
             class="action-btn secondary"
@@ -150,6 +150,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+    <script src="utils/image-processing.js"></script>
     <script src="renderer.js"></script>
   </body>
 </html>

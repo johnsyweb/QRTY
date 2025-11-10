@@ -79,6 +79,8 @@ describe("renderer helpers", () => {
       .mockImplementation(() => canvasContextStub);
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("../utils/image-processing.js");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("../renderer.js");
     hooks = (window.__QRTY_TEST_HOOKS__ || {}) as RendererTestHooks;
   });
@@ -105,6 +107,7 @@ describe("renderer helpers", () => {
 
     jest.restoreAllMocks();
     window.__QRTY_TEST_HOOKS__ = undefined;
+    window.QRTY_IMAGE_UTILS = undefined;
     (globalThis as any).jsQR = undefined;
     window.ZXing = undefined;
   });

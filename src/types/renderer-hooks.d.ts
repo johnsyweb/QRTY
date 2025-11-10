@@ -11,6 +11,38 @@ export type ZXingModule = typeof ZXingNs & {
   ) => ZXingMultipleReader;
 };
 
+export type ImageProcessingUtils = {
+  get2dContext: (
+    canvas: HTMLCanvasElement | OffscreenCanvas | null
+  ) => CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+  getScaledCanvas: (
+    canvas: HTMLCanvasElement,
+    scaleFactor: number
+  ) => {
+    canvas: HTMLCanvasElement;
+    context:
+      | CanvasRenderingContext2D
+      | OffscreenCanvasRenderingContext2D
+      | null;
+  };
+  addQuietZone: (
+    canvas: HTMLCanvasElement
+  ) => {
+    canvas: HTMLCanvasElement;
+    context:
+      | CanvasRenderingContext2D
+      | OffscreenCanvasRenderingContext2D
+      | null;
+  };
+  normaliseImageData: (imageData: ImageData) => void;
+  computeOtsuThreshold: (histogram: Uint32Array, totalPixels: number) => number;
+  binariseImageData: (imageData: ImageData) => void;
+  thickenLinearFeatures: (imageData: ImageData) => void;
+  getBarcodeImagePayload: (
+    canvas: HTMLCanvasElement
+  ) => { data: Uint8ClampedArray; width: number; height: number } | null;
+};
+
 export type RendererTestHooks = {
   mergeUniqueValues: (...lists: string[][]) => string[];
   isHttpUrl: (value: string) => boolean;
@@ -29,6 +61,7 @@ declare global {
   interface Window {
     __QRTY_TEST_HOOKS__?: RendererTestHooks;
     ZXing?: ZXingModule;
+    QRTY_IMAGE_UTILS?: ImageProcessingUtils;
   }
 
   // eslint-disable-next-line no-var
