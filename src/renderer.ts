@@ -1,8 +1,10 @@
-type RendererTestHooks = import("./types/renderer-hooks").RendererTestHooks;
-type ZXingModule = import("./types/renderer-hooks").ZXingModule;
-type ZXingMultipleReader = import("./types/renderer-hooks").ZXingMultipleReader;
-type ImageProcessingUtils =
-  import("./types/renderer-hooks").ImageProcessingUtils;
+import type {
+  RendererTestHooks,
+  ZXingModule,
+  ZXingMultipleReader,
+  ImageProcessingUtils,
+} from "./types/renderer-hooks";
+
 type JsQrPoint = { x: number; y: number };
 type JsQrResult = {
   data?: string;
@@ -13,6 +15,13 @@ type JsQrResult = {
     bottomLeftCorner: JsQrPoint;
   };
 };
+
+declare const jsQR: (
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  options?: { inversionAttempts?: string }
+) => JsQrResult | null;
 
 const captureBtn = document.getElementById("capture-btn") as
   | HTMLButtonElement
@@ -84,7 +93,7 @@ if (captureSupportNote) {
     "Screen capture works best in modern desktop browsers. If it isn't supported on your device, please use the upload option instead.";
 }
 
-function showError(message) {
+function showError(message: string): void {
   if (!errorContainer) return;
   errorContainer.textContent = message;
   errorContainer.classList.remove("hidden");
@@ -94,12 +103,12 @@ function showError(message) {
   }, 5000);
 }
 
-function hideError() {
+function hideError(): void {
   if (!errorContainer) return;
   errorContainer.classList.add("hidden");
 }
 
-function resetState() {
+function resetState(): void {
   if (resultContainer) {
     resultContainer.classList.add("hidden");
   }
@@ -111,14 +120,17 @@ function resetState() {
   stopCapture();
 }
 
-function valuesAreEqual(a, b) {
+function valuesAreEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) {
     return false;
   }
   return a.every((value, index) => value === b[index]);
 }
 
-function setTemporaryButtonMessage(button, message) {
+function setTemporaryButtonMessage(
+  button: HTMLButtonElement | null,
+  message: string
+): void {
   if (!button) return;
   const originalText = button.textContent;
   button.disabled = true;
@@ -129,11 +141,10 @@ function setTemporaryButtonMessage(button, message) {
   }, 2000);
 }
 
-/**
- * @param {string} value
- * @param {HTMLButtonElement} button
- */
-async function copyToClipboard(value, button) {
+async function copyToClipboard(
+  value: string,
+  button: HTMLButtonElement
+): Promise<void> {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
       await navigator.clipboard.writeText(value);
@@ -153,15 +164,20 @@ async function shareContent(
   value: string,
   button: HTMLButtonElement,
   options: { isUrl?: boolean } = {}
-) {
+): Promise<void> {
   const { isUrl = false } = options;
   if (navigator.share) {
     try {
       const shareData = isUrl ? { url: value, text: value } : { text: value };
       await navigator.share(shareData);
       return;
-    } catch (error) {
-      if (error && error.name === "AbortError") {
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "name" in error &&
+        (error as { name?: string }).name === "AbortError"
+      ) {
         return;
       }
       console.warn("navigator.share failed, falling back to copy", error);
@@ -170,7 +186,7 @@ async function shareContent(
   await copyToClipboard(value, button);
 }
 
-function isHttpUrl(value) {
+function isHttpUrl(value: string): boolean {
   try {
     const parsed = new URL(value);
     return parsed.protocol === "http:" || parsed.protocol === "https:";
@@ -179,7 +195,7 @@ function isHttpUrl(value) {
   }
 }
 
-function displayResults(values) {
+function displayResults(values: string[]): void {
   if (!resultList || !resultContainer) {
     return;
   }
@@ -192,7 +208,7 @@ function displayResults(values) {
 
     const isUrl = isHttpUrl(value);
 
-    let primaryContent;
+    let primaryContent: HTMLElement;
     if (isUrl) {
       const link = document.createElement("a");
       link.href = value;

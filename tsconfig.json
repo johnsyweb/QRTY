@@ -12,7 +12,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "strict": true,
+    "useUnknownInCatchVariables": true
   },
   "include": [
     "src/**/*",
