@@ -1,4 +1,5 @@
 import type * as ZXingNs from "@zxing/library";
+import type { ImageProcessingUtils as ImageProcessingUtilsModule } from "../utils/image-processing";
 
 export type ZXingMultipleReader = {
   decodeMultiple: (bitmap: ZXingNs.BinaryBitmap) => ZXingNs.Result[];
@@ -13,37 +14,7 @@ export type ZXingModule = typeof ZXingNs & {
 
 export type ZXingDecodeHintType = ZXingNs.DecodeHintType;
 
-export type ImageProcessingUtils = {
-  get2dContext: (
-    canvas: HTMLCanvasElement | OffscreenCanvas | null
-  ) => CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
-  getScaledCanvas: (
-    canvas: HTMLCanvasElement,
-    scaleFactor: number
-  ) => {
-    canvas: HTMLCanvasElement;
-    context:
-      | CanvasRenderingContext2D
-      | OffscreenCanvasRenderingContext2D
-      | null;
-  };
-  addQuietZone: (
-    canvas: HTMLCanvasElement
-  ) => {
-    canvas: HTMLCanvasElement;
-    context:
-      | CanvasRenderingContext2D
-      | OffscreenCanvasRenderingContext2D
-      | null;
-  };
-  normaliseImageData: (imageData: ImageData) => void;
-  computeOtsuThreshold: (histogram: Uint32Array, totalPixels: number) => number;
-  binariseImageData: (imageData: ImageData) => void;
-  thickenLinearFeatures: (imageData: ImageData) => void;
-  getBarcodeImagePayload: (
-    canvas: HTMLCanvasElement
-  ) => { data: Uint8ClampedArray; width: number; height: number } | null;
-};
+export type ImageProcessingUtils = ImageProcessingUtilsModule;
 
 export type RendererTestHooks = {
   mergeUniqueValues: (...lists: string[][]) => string[];

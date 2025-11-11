@@ -8,6 +8,6 @@
     "rootDir": "./src",
     "allowJs": false
   },
-  "include": ["src/renderer.ts"]
+  "include": ["src/renderer.ts", "src/utils/image-processing.ts"]
 }
 

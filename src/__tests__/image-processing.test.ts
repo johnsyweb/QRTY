@@ -1,6 +1,7 @@
 import type { ImageProcessingUtils } from "../types/renderer-hooks";
 
-const utils = require("../utils/image-processing.js") as ImageProcessingUtils;
+const utils = require("../utils/image-processing.ts")
+  .default as ImageProcessingUtils;
 
 describe("image processing utils", () => {
   test("normaliseImageData stretches luminance range", () => {

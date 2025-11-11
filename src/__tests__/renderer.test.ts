@@ -84,7 +84,7 @@ describe("renderer helpers", () => {
       .mockImplementation(() => canvasContextStub);
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require("../utils/image-processing.js");
+    require("../utils/image-processing.ts");
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("../renderer.js");
     hooks = (window.__QRTY_TEST_HOOKS__ || {}) as RendererTestHooks;

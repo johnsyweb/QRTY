@@ -9,7 +9,7 @@
     "format": "prettier --write \"src/**/*.{js,html,css}\" \"scripts/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.{js,html,css}\" \"scripts/**/*.js\"",
     "typecheck": "tsc --noEmit",
-    "build:renderer": "tsc -p tsconfig.renderer.json && cp build/renderer/renderer.js src/renderer.js && rm -rf build/renderer",
+    "build:renderer": "tsc -p tsconfig.renderer.json && cp -R build/renderer/* src/ && rm -rf build/renderer",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og-image": "node scripts/generate-og-image.js",
     "generate:qr-code": "node scripts/generate-qr-code.js",
