@@ -22,7 +22,9 @@ describe("renderer helpers", () => {
   let hooks: RendererTestHooks;
   let originalClipboard: Clipboard | undefined;
   let originalShare: typeof navigator.share;
-  let originalScrollIntoView: ((...args: unknown[]) => void) | null;
+  let originalScrollIntoView:
+    | ((arg?: boolean | ScrollIntoViewOptions) => void)
+    | null;
 
   beforeEach(() => {
     jest.resetModules();
@@ -60,7 +62,10 @@ describe("renderer helpers", () => {
     });
 
     originalShare = window.navigator.share;
-    window.navigator.share = undefined;
+    Object.defineProperty(window.navigator, "share", {
+      configurable: true,
+      value: undefined,
+    });
 
     window.open = jest.fn();
     (globalThis as any).jsQR = jest.fn();
@@ -99,7 +104,10 @@ describe("renderer helpers", () => {
       });
     }
 
-    window.navigator.share = originalShare;
+    Object.defineProperty(window.navigator, "share", {
+      configurable: true,
+      value: originalShare,
+    });
 
     if (hooks && typeof hooks.resetBarcodeReaders === "function") {
       hooks.resetBarcodeReaders();
@@ -132,7 +140,9 @@ describe("renderer helpers", () => {
   test("displayResults renders link and text entries", () => {
     hooks.displayResults(["https://example.com", "CODE-128:12345"]);
 
-    const resultContainer = document.getElementById("result-container");
+    const resultContainer = document.getElementById(
+      "result-container"
+    ) as HTMLDivElement;
     expect(resultContainer.classList.contains("hidden")).toBe(false);
 
     const items = Array.from(
@@ -265,8 +275,10 @@ describe("renderer helpers", () => {
     expect(zxMock.RGBLuminanceSource).toHaveBeenCalledTimes(1);
     const [processedData] = zxMock.RGBLuminanceSource.mock.calls[0];
     expect(processedData).toBeInstanceOf(Uint8ClampedArray);
-    expect(processedData.some((channel) => channel === 0)).toBe(true);
-    expect(processedData.some((channel) => channel === 255)).toBe(true);
+    expect(processedData.some((channel: number) => channel === 0)).toBe(true);
+    expect(
+      processedData.some((channel: number) => channel === 255)
+    ).toBe(true);
     expect(reset).toHaveBeenCalled();
   });
 

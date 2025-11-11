@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const captureBtn = document.getElementById("capture-btn");
 const fileInput = document.getElementById("file-input");
 const videoContainer = document.getElementById("video-container");
@@ -72,10 +74,6 @@ function setTemporaryButtonMessage(button, message) {
         button.disabled = false;
     }, 2000);
 }
-/**
- * @param {string} value
- * @param {HTMLButtonElement} button
- */
 async function copyToClipboard(value, button) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
@@ -100,7 +98,10 @@ async function shareContent(value, button, options = {}) {
             return;
         }
         catch (error) {
-            if (error && error.name === "AbortError") {
+            if (error &&
+                typeof error === "object" &&
+                "name" in error &&
+                error.name === "AbortError") {
                 return;
             }
             console.warn("navigator.share failed, falling back to copy", error);
@@ -158,9 +159,10 @@ function displayResults(values) {
         const shareButton = document.createElement("button");
         shareButton.type = "button";
         shareButton.className = "action-btn";
-        shareButton.textContent = navigator.share ? "Share" : "Copy";
+        const canUseNavigatorShare = typeof navigator.share === "function";
+        shareButton.textContent = canUseNavigatorShare ? "Share" : "Copy";
         shareButton.addEventListener("click", () => {
-            shareContent(value, shareButton, { isUrl });
+            void shareContent(value, shareButton, { isUrl });
         });
         actions.appendChild(shareButton);
         item.appendChild(primaryContent);
@@ -170,10 +172,6 @@ function displayResults(values) {
     resultContainer.classList.remove("hidden");
     hideError();
 }
-/**
- * @param {HTMLCanvasElement} canvas
- * @returns {string[]}
- */
 function scanQRCodesFromCanvas(canvas) {
     const { width, height } = canvas;
     if (!width || !height) {
@@ -232,11 +230,7 @@ function scanQRCodesFromCanvas(canvas) {
     });
     return results.map((item) => item.data);
 }
-/**
- * @returns {ZXingMultipleReader | null}
- */
 function getMultipleBarcodeReader() {
-    /** @type {ZXingModule | undefined} */
     const ZXingLib = window.ZXing;
     if (!ZXingLib) {
         return null;
@@ -252,7 +246,10 @@ function getMultipleBarcodeReader() {
         "BinaryBitmap",
         "RGBLuminanceSource",
     ];
-    const hasAllConstructors = requiredConstructors.every((name) => typeof ZXingLib[name] === "function" || ZXingLib[name]);
+    const hasAllConstructors = requiredConstructors.every((name) => {
+        const member = ZXingLib[name];
+        return typeof member === "function" || Boolean(member);
+    });
     if (!hasAllConstructors) {
         return null;
     }
@@ -269,23 +266,28 @@ function getMultipleBarcodeReader() {
         ZXingLib.BarcodeFormat.DATA_MATRIX,
         ZXingLib.BarcodeFormat.PDF_417,
         ZXingLib.BarcodeFormat.AZTEC,
-    ].filter(Boolean);
+    ].filter((format) => Boolean(format));
     const hints = new Map();
     if (formats.length > 0) {
         hints.set(ZXingLib.DecodeHintType.POSSIBLE_FORMATS, formats);
     }
     hints.set(ZXingLib.DecodeHintType.TRY_HARDER, true);
-    multiFormatReader = new ZXingLib.MultiFormatReader();
-    multiFormatReader.setHints(hints);
+    const baseReader = new ZXingLib.MultiFormatReader();
+    baseReader.setHints(hints);
+    multiFormatReader = baseReader;
     barcodeHints = hints;
     if (typeof ZXingLib.GenericMultipleBarcodeReader === "function") {
-        multipleBarcodeReader = new ZXingLib.GenericMultipleBarcodeReader(multiFormatReader);
+        multipleBarcodeReader = new ZXingLib.GenericMultipleBarcodeReader(baseReader);
     }
     else {
         multipleBarcodeReader = {
             decodeMultiple(binaryBitmap) {
+                const readerRef = multiFormatReader;
+                if (!readerRef) {
+                    return [];
+                }
                 try {
-                    const result = multiFormatReader.decodeWithState(binaryBitmap);
+                    const result = readerRef.decodeWithState(binaryBitmap);
                     return result ? [result] : [];
                 }
                 catch (error) {
@@ -296,10 +298,7 @@ function getMultipleBarcodeReader() {
                     throw error;
                 }
                 finally {
-                    if (multiFormatReader &&
-                        typeof multiFormatReader.reset === "function") {
-                        multiFormatReader.reset();
-                    }
+                    readerRef.reset();
                 }
             },
         };
@@ -315,7 +314,6 @@ function getMultipleBarcodeReader() {
  * @returns {string[]}
  */
 function scanBarcodesFromCanvas(canvas) {
-    /** @type {ZXingModule | undefined} */
     const ZXingLib = window.ZXing;
     const reader = getMultipleBarcodeReader();
     if (!ZXingLib || !reader) {
@@ -333,9 +331,10 @@ function scanBarcodesFromCanvas(canvas) {
     try {
         const createLuminanceSource = () => new ZXingLib.RGBLuminanceSource(new Uint8ClampedArray(data), processedWidth, processedHeight);
         const decodeWithBinaryBitmap = (binaryBitmap) => {
+            var _a;
             let results = [];
             try {
-                results = reader.decodeMultiple(binaryBitmap) || [];
+                results = (_a = reader.decodeMultiple(binaryBitmap)) !== null && _a !== void 0 ? _a : [];
             }
             catch (error) {
                 if (!(ZXingLib.NotFoundException &&
@@ -343,9 +342,10 @@ function scanBarcodesFromCanvas(canvas) {
                     throw error;
                 }
             }
-            if ((!results || results.length === 0) && multiFormatReader) {
+            if (results.length === 0 && multiFormatReader) {
+                const readerWithState = multiFormatReader;
                 try {
-                    const singleResult = multiFormatReader.decodeWithState(binaryBitmap);
+                    const singleResult = readerWithState.decodeWithState(binaryBitmap);
                     if (singleResult) {
                         results = [singleResult];
                     }
@@ -357,13 +357,11 @@ function scanBarcodesFromCanvas(canvas) {
                     }
                 }
             }
-            if (multiFormatReader && typeof multiFormatReader.reset === "function") {
-                multiFormatReader.reset();
-            }
-            return results || [];
+            multiFormatReader === null || multiFormatReader === void 0 ? void 0 : multiFormatReader.reset();
+            return results;
         };
         const decodeWithBinarizer = (BinarizerClass) => {
-            if (typeof BinarizerClass !== "function") {
+            if (!BinarizerClass) {
                 return [];
             }
             const luminanceSource = createLuminanceSource();
@@ -371,11 +369,10 @@ function scanBarcodesFromCanvas(canvas) {
             return decodeWithBinaryBitmap(binaryBitmap);
         };
         let results = decodeWithBinarizer(ZXingLib.HybridBinarizer);
-        if ((!results || results.length === 0) &&
-            typeof ZXingLib.GlobalHistogramBinarizer === "function") {
+        if (results.length === 0 && ZXingLib.GlobalHistogramBinarizer) {
             results = decodeWithBinarizer(ZXingLib.GlobalHistogramBinarizer);
         }
-        if ((!results || results.length === 0) &&
+        if (results.length === 0 &&
             barcodeHints instanceof Map &&
             ZXingLib.DecodeHintType &&
             typeof ZXingLib.DecodeHintType.PURE_BARCODE !== "undefined") {
@@ -402,10 +399,12 @@ function scanBarcodesFromCanvas(canvas) {
                 }
             }
         }
-        if ((!results || results.length === 0) &&
+        if (results.length === 0 &&
             typeof ZXingLib.Code128Reader === "function" &&
             typeof ZXingLib.BitArray === "function") {
-            const hintsForRows = barcodeHints instanceof Map ? new Map(barcodeHints) : new Map();
+            const hintsForRows = barcodeHints instanceof Map
+                ? new Map(barcodeHints)
+                : new Map();
             if (ZXingLib.DecodeHintType &&
                 typeof ZXingLib.DecodeHintType.TRY_HARDER !== "undefined") {
                 hintsForRows.set(ZXingLib.DecodeHintType.TRY_HARDER, true);
@@ -441,8 +440,7 @@ function scanBarcodesFromCanvas(canvas) {
                         bitArray.set(x);
                     }
                 }
-                for (let readerIndex = 0; readerIndex < rowReaders.length; readerIndex += 1) {
-                    const rowReader = rowReaders[readerIndex];
+                for (const rowReader of rowReaders) {
                     try {
                         const rowResult = rowReader.decodeRow(row, bitArray, hintsForRows);
                         if (rowResult) {
@@ -490,22 +488,15 @@ function scanBarcodesFromCanvas(canvas) {
         return [];
     }
     finally {
-        if (multiFormatReader && typeof multiFormatReader.reset === "function") {
-            multiFormatReader.reset();
+        if (typeof (multiFormatReader === null || multiFormatReader === void 0 ? void 0 : multiFormatReader.reset) === "function") {
+            multiFormatReader === null || multiFormatReader === void 0 ? void 0 : multiFormatReader.reset();
         }
     }
 }
-/**
- * @param {...string[]} lists
- * @returns {string[]}
- */
 function mergeUniqueValues(...lists) {
     const values = [];
     const seen = new Set();
     lists.forEach((entries) => {
-        if (!entries) {
-            return;
-        }
         entries.forEach((value) => {
             if (!value || seen.has(value)) {
                 return;
@@ -556,7 +547,7 @@ function startScreenCapture() {
         videoPreview.addEventListener("loadedmetadata", () => {
             canvasPreview.width = videoPreview.videoWidth;
             canvasPreview.height = videoPreview.videoHeight;
-            scanInterval = setInterval(() => {
+            scanInterval = window.setInterval(() => {
                 if (videoPreview.readyState === videoPreview.HAVE_ENOUGH_DATA) {
                     const ctx = canvasPreview.getContext("2d");
                     if (!ctx) {
@@ -593,11 +584,12 @@ function startScreenCapture() {
     });
 }
 function handleFileUpload(event) {
+    var _a;
     if (!fileInput) {
         return;
     }
-    const target = /** @type {HTMLInputElement} */ (event.target);
-    const file = target.files && target.files[0];
+    const target = event.target;
+    const file = (_a = target === null || target === void 0 ? void 0 : target.files) === null || _a === void 0 ? void 0 : _a[0];
     if (!file) {
         return;
     }
@@ -707,7 +699,4 @@ const testHooks = {
 };
 if (typeof window !== "undefined") {
     window.__QRTY_TEST_HOOKS__ = testHooks;
-}
-else if (typeof globalThis !== "undefined") {
-    globalThis.__QRTY_TEST_HOOKS__ = testHooks;
 }

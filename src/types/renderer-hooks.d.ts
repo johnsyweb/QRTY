@@ -11,6 +11,8 @@ export type ZXingModule = typeof ZXingNs & {
   ) => ZXingMultipleReader;
 };
 
+export type ZXingDecodeHintType = ZXingNs.DecodeHintType;
+
 export type ImageProcessingUtils = {
   get2dContext: (
     canvas: HTMLCanvasElement | OffscreenCanvas | null
@@ -51,8 +53,15 @@ export type RendererTestHooks = {
   getMultipleBarcodeReader: () => ZXingMultipleReader | null;
   scanCodesFromCanvas: (canvas: HTMLCanvasElement) => string[];
   scanQRCodesFromCanvas: (canvas: HTMLCanvasElement) => string[];
-  shareContent: (...args: unknown[]) => Promise<void>;
-  copyToClipboard: (...args: unknown[]) => Promise<void>;
+  shareContent: (
+    value: string,
+    button: HTMLButtonElement,
+    options?: { isUrl?: boolean }
+  ) => Promise<void>;
+  copyToClipboard: (
+    value: string,
+    button: HTMLButtonElement
+  ) => Promise<void>;
   valuesAreEqual: (a: string[], b: string[]) => boolean;
   resetBarcodeReaders?: () => void;
 };

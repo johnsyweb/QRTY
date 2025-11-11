@@ -3,6 +3,7 @@ import type {
   ZXingModule,
   ZXingMultipleReader,
   ImageProcessingUtils,
+  ZXingDecodeHintType,
 } from "./types/renderer-hooks";
 
 type JsQrPoint = { x: number; y: number };
@@ -22,6 +23,13 @@ declare const jsQR: (
   height: number,
   options?: { inversionAttempts?: string }
 ) => JsQrResult | null;
+
+type ZXingResultInstance = InstanceType<ZXingModule["Result"]>;
+type ZXingBinaryBitmapInstance = InstanceType<ZXingModule["BinaryBitmap"]>;
+type ZXingRGBLuminanceInstance = InstanceType<ZXingModule["RGBLuminanceSource"]>;
+type ZXingBinarizerConstructor =
+  | ZXingModule["HybridBinarizer"]
+  | ZXingModule["GlobalHistogramBinarizer"];
 
 const captureBtn = document.getElementById("capture-btn") as
   | HTMLButtonElement
@@ -58,7 +66,7 @@ const captureSupportNote = document.getElementById(
 ) as HTMLParagraphElement | null;
 
 let stream: MediaStream | null = null;
-let scanInterval: ReturnType<typeof setInterval> | null = null;
+let scanInterval: number | null = null;
 let decodedValues: string[] = [];
 
 const imageUtils = window.QRTY_IMAGE_UTILS as ImageProcessingUtils | undefined;
@@ -80,7 +88,7 @@ const {
 let multiFormatReader: InstanceType<ZXingModule["MultiFormatReader"]> | null =
   null;
 let multipleBarcodeReader: ZXingMultipleReader | null = null;
-let barcodeHints: Map<any, any> | null = null;
+let barcodeHints: Map<ZXingDecodeHintType, unknown> | null = null;
 
 function resetBarcodeReaders(): void {
   multiFormatReader = null;
@@ -202,7 +210,7 @@ function displayResults(values: string[]): void {
   decodedValues = values.slice();
   resultList.innerHTML = "";
 
-  values.forEach((value) => {
+  values.forEach((value: string) => {
     const item = document.createElement("div");
     item.className = "result-item";
 
@@ -241,9 +249,10 @@ function displayResults(values: string[]): void {
     const shareButton = document.createElement("button");
     shareButton.type = "button";
     shareButton.className = "action-btn";
-    shareButton.textContent = navigator.share ? "Share" : "Copy";
+    const canUseNavigatorShare = typeof navigator.share === "function";
+    shareButton.textContent = canUseNavigatorShare ? "Share" : "Copy";
     shareButton.addEventListener("click", () => {
-      shareContent(value, shareButton, { isUrl });
+      void shareContent(value, shareButton, { isUrl });
     });
 
     actions.appendChild(shareButton);
@@ -257,11 +266,7 @@ function displayResults(values: string[]): void {
   hideError();
 }
 
-/**
- * @param {HTMLCanvasElement} canvas
- * @returns {string[]}
- */
-function scanQRCodesFromCanvas(canvas) {
+function scanQRCodesFromCanvas(canvas: HTMLCanvasElement): string[] {
   const { width, height } = canvas;
   if (!width || !height) {
     return [];
@@ -344,12 +349,8 @@ function scanQRCodesFromCanvas(canvas) {
   return results.map((item) => item.data);
 }
 
-/**
- * @returns {ZXingMultipleReader | null}
- */
-function getMultipleBarcodeReader() {
-  /** @type {ZXingModule | undefined} */
-  const ZXingLib = window.ZXing;
+function getMultipleBarcodeReader(): ZXingMultipleReader | null {
+  const ZXingLib = window.ZXing as ZXingModule | undefined;
   if (!ZXingLib) {
     return null;
   }
@@ -358,7 +359,7 @@ function getMultipleBarcodeReader() {
     return multipleBarcodeReader;
   }
 
-  const requiredConstructors = [
+  const requiredConstructors: (keyof ZXingModule)[] = [
     "MultiFormatReader",
     "DecodeHintType",
     "BarcodeFormat",
@@ -367,9 +368,10 @@ function getMultipleBarcodeReader() {
     "RGBLuminanceSource",
   ];
 
-  const hasAllConstructors = requiredConstructors.every(
-    (name) => typeof ZXingLib[name] === "function" || ZXingLib[name]
-  );
+  const hasAllConstructors = requiredConstructors.every((name) => {
+    const member = ZXingLib[name];
+    return typeof member === "function" || Boolean(member);
+  });
 
   if (!hasAllConstructors) {
     return null;
@@ -388,27 +390,32 @@ function getMultipleBarcodeReader() {
     ZXingLib.BarcodeFormat.DATA_MATRIX,
     ZXingLib.BarcodeFormat.PDF_417,
     ZXingLib.BarcodeFormat.AZTEC,
-  ].filter(Boolean);
+  ].filter((format): format is NonNullable<typeof format> => Boolean(format));
 
-  const hints = new Map();
+  const hints = new Map<ZXingDecodeHintType, unknown>();
   if (formats.length > 0) {
     hints.set(ZXingLib.DecodeHintType.POSSIBLE_FORMATS, formats);
   }
   hints.set(ZXingLib.DecodeHintType.TRY_HARDER, true);
 
-  multiFormatReader = new ZXingLib.MultiFormatReader();
-  multiFormatReader.setHints(hints);
+  const baseReader = new ZXingLib.MultiFormatReader();
+  baseReader.setHints(hints);
+  multiFormatReader = baseReader;
   barcodeHints = hints;
 
   if (typeof ZXingLib.GenericMultipleBarcodeReader === "function") {
     multipleBarcodeReader = new ZXingLib.GenericMultipleBarcodeReader(
-      multiFormatReader
+      baseReader
     );
   } else {
     multipleBarcodeReader = {
       decodeMultiple(binaryBitmap) {
+        const readerRef = multiFormatReader;
+        if (!readerRef) {
+          return [];
+        }
         try {
-          const result = multiFormatReader.decodeWithState(binaryBitmap);
+          const result = readerRef.decodeWithState(binaryBitmap);
           return result ? [result] : [];
         } catch (error) {
           if (
@@ -419,12 +426,7 @@ function getMultipleBarcodeReader() {
           }
           throw error;
         } finally {
-          if (
-            multiFormatReader &&
-            typeof multiFormatReader.reset === "function"
-          ) {
-            multiFormatReader.reset();
-          }
+          readerRef.reset();
         }
       },
     };
@@ -441,9 +443,8 @@ function getMultipleBarcodeReader() {
  * @param {HTMLCanvasElement} canvas
  * @returns {string[]}
  */
-function scanBarcodesFromCanvas(canvas) {
-  /** @type {ZXingModule | undefined} */
-  const ZXingLib = window.ZXing;
+function scanBarcodesFromCanvas(canvas: HTMLCanvasElement): string[] {
+  const ZXingLib = window.ZXing as ZXingModule | undefined;
   const reader = getMultipleBarcodeReader();
 
   if (!ZXingLib || !reader) {
@@ -456,7 +457,6 @@ function scanBarcodesFromCanvas(canvas) {
   }
 
   const payload = getBarcodeImagePayload(canvas);
-
   if (!payload) {
     return [];
   }
@@ -464,18 +464,20 @@ function scanBarcodesFromCanvas(canvas) {
   const { data, width: processedWidth, height: processedHeight } = payload;
 
   try {
-    const createLuminanceSource = () =>
+    const createLuminanceSource = (): ZXingRGBLuminanceInstance =>
       new ZXingLib.RGBLuminanceSource(
         new Uint8ClampedArray(data),
         processedWidth,
         processedHeight
       );
 
-    const decodeWithBinaryBitmap = (binaryBitmap) => {
-      let results = [];
+    const decodeWithBinaryBitmap = (
+      binaryBitmap: ZXingBinaryBitmapInstance
+    ): ZXingResultInstance[] => {
+      let results: ZXingResultInstance[] = [];
 
       try {
-        results = reader.decodeMultiple(binaryBitmap) || [];
+        results = reader.decodeMultiple(binaryBitmap) ?? [];
       } catch (error) {
         if (
           !(
@@ -487,9 +489,10 @@ function scanBarcodesFromCanvas(canvas) {
         }
       }
 
-      if ((!results || results.length === 0) && multiFormatReader) {
+      if (results.length === 0 && multiFormatReader) {
+        const readerWithState = multiFormatReader;
         try {
-          const singleResult = multiFormatReader.decodeWithState(binaryBitmap);
+          const singleResult = readerWithState.decodeWithState(binaryBitmap);
           if (singleResult) {
             results = [singleResult];
           }
@@ -505,15 +508,15 @@ function scanBarcodesFromCanvas(canvas) {
         }
       }
 
-      if (multiFormatReader && typeof multiFormatReader.reset === "function") {
-        multiFormatReader.reset();
-      }
+      multiFormatReader?.reset();
 
-      return results || [];
+      return results;
     };
 
-    const decodeWithBinarizer = (BinarizerClass) => {
-      if (typeof BinarizerClass !== "function") {
+    const decodeWithBinarizer = (
+      BinarizerClass: ZXingBinarizerConstructor | undefined
+    ): ZXingResultInstance[] => {
+      if (!BinarizerClass) {
         return [];
       }
 
@@ -527,20 +530,17 @@ function scanBarcodesFromCanvas(canvas) {
 
     let results = decodeWithBinarizer(ZXingLib.HybridBinarizer);
 
-    if (
-      (!results || results.length === 0) &&
-      typeof ZXingLib.GlobalHistogramBinarizer === "function"
-    ) {
+    if (results.length === 0 && ZXingLib.GlobalHistogramBinarizer) {
       results = decodeWithBinarizer(ZXingLib.GlobalHistogramBinarizer);
     }
 
     if (
-      (!results || results.length === 0) &&
+      results.length === 0 &&
       barcodeHints instanceof Map &&
       ZXingLib.DecodeHintType &&
       typeof ZXingLib.DecodeHintType.PURE_BARCODE !== "undefined"
     ) {
-      const pureHints = new Map(barcodeHints);
+      const pureHints = new Map<ZXingDecodeHintType, unknown>(barcodeHints);
       pureHints.set(ZXingLib.DecodeHintType.PURE_BARCODE, true);
 
       const pureReader = new ZXingLib.MultiFormatReader();
@@ -571,12 +571,15 @@ function scanBarcodesFromCanvas(canvas) {
     }
 
     if (
-      (!results || results.length === 0) &&
+      results.length === 0 &&
       typeof ZXingLib.Code128Reader === "function" &&
       typeof ZXingLib.BitArray === "function"
     ) {
-      const hintsForRows =
-        barcodeHints instanceof Map ? new Map(barcodeHints) : new Map();
+      const hintsForRows: Map<ZXingDecodeHintType, unknown> =
+        barcodeHints instanceof Map
+          ? new Map<ZXingDecodeHintType, unknown>(barcodeHints)
+          : new Map<ZXingDecodeHintType, unknown>();
+
       if (
         ZXingLib.DecodeHintType &&
         typeof ZXingLib.DecodeHintType.TRY_HARDER !== "undefined"
@@ -586,7 +589,7 @@ function scanBarcodesFromCanvas(canvas) {
 
       const rowReaders = [new ZXingLib.Code128Reader()];
 
-      const rowsToSample = [];
+      const rowsToSample: number[] = [];
       const maxSamples = Math.min(processedHeight, 15);
       const centerRow = Math.floor(processedHeight / 2);
       rowsToSample.push(centerRow);
@@ -609,8 +612,8 @@ function scanBarcodesFromCanvas(canvas) {
         }
       }
 
-      const seenRows = new Set();
-      const rowResults = [];
+      const seenRows = new Set<number>();
+      const rowResults: ZXingResultInstance[] = [];
 
       for (let index = 0; index < rowsToSample.length; index += 1) {
         const row = rowsToSample[index];
@@ -627,13 +630,7 @@ function scanBarcodesFromCanvas(canvas) {
           }
         }
 
-        for (
-          let readerIndex = 0;
-          readerIndex < rowReaders.length;
-          readerIndex += 1
-        ) {
-          const rowReader = rowReaders[readerIndex];
-
+        for (const rowReader of rowReaders) {
           try {
             const rowResult = rowReader.decodeRow(row, bitArray, hintsForRows);
             if (rowResult) {
@@ -667,7 +664,7 @@ function scanBarcodesFromCanvas(canvas) {
       }
     }
 
-    const uniqueValues = [];
+    const uniqueValues: string[] = [];
     results.forEach((result) => {
       const text = result.getText ? result.getText().trim() : "";
       if (text && !uniqueValues.includes(text)) {
@@ -686,24 +683,17 @@ function scanBarcodesFromCanvas(canvas) {
     console.error("Barcode decoding failed", error);
     return [];
   } finally {
-    if (multiFormatReader && typeof multiFormatReader.reset === "function") {
-      multiFormatReader.reset();
+    if (typeof multiFormatReader?.reset === "function") {
+    multiFormatReader?.reset();
     }
   }
 }
 
-/**
- * @param {...string[]} lists
- * @returns {string[]}
- */
-function mergeUniqueValues(...lists) {
-  const values = [];
-  const seen = new Set();
+function mergeUniqueValues(...lists: string[][]): string[] {
+  const values: string[] = [];
+  const seen = new Set<string>();
 
   lists.forEach((entries) => {
-    if (!entries) {
-      return;
-    }
     entries.forEach((value) => {
       if (!value || seen.has(value)) {
         return;
@@ -716,14 +706,14 @@ function mergeUniqueValues(...lists) {
   return values;
 }
 
-function scanCodesFromCanvas(canvas) {
+function scanCodesFromCanvas(canvas: HTMLCanvasElement): string[] {
   return mergeUniqueValues(
     scanQRCodesFromCanvas(canvas),
     scanBarcodesFromCanvas(canvas)
   );
 }
 
-function stopCapture() {
+function stopCapture(): void {
   if (stream) {
     stream.getTracks().forEach((track) => track.stop());
     stream = null;
@@ -740,7 +730,7 @@ function stopCapture() {
   }
 }
 
-function startScreenCapture() {
+function startScreenCapture(): void {
   if (stream) {
     return;
   }
@@ -756,7 +746,7 @@ function startScreenCapture() {
       },
       audio: false,
     })
-    .then((mediaStream) => {
+    .then((mediaStream: MediaStream) => {
       stream = mediaStream;
       videoPreview.srcObject = stream;
       videoContainer.classList.remove("hidden");
@@ -765,7 +755,7 @@ function startScreenCapture() {
         canvasPreview.width = videoPreview.videoWidth;
         canvasPreview.height = videoPreview.videoHeight;
 
-        scanInterval = setInterval(() => {
+        scanInterval = window.setInterval(() => {
           if (videoPreview.readyState === videoPreview.HAVE_ENOUGH_DATA) {
             const ctx = canvasPreview.getContext("2d");
             if (!ctx) {
@@ -792,7 +782,7 @@ function startScreenCapture() {
         stopCapture();
       });
     })
-    .catch((error) => {
+    .catch((error: DOMException) => {
       let errorMessage = "Failed to capture screen.";
       if (
         error.name === "NotAllowedError" ||
@@ -810,12 +800,12 @@ function startScreenCapture() {
     });
 }
 
-function handleFileUpload(event) {
+function handleFileUpload(event: Event): void {
   if (!fileInput) {
     return;
   }
-  const target = /** @type {HTMLInputElement} */ (event.target);
-  const file = target.files && target.files[0];
+  const target = event.target as HTMLInputElement | null;
+  const file = target?.files?.[0];
   if (!file) {
     return;
   }
@@ -880,8 +870,8 @@ if (captureBtn) {
   captureBtn.addEventListener("click", startScreenCapture);
 }
 
-document.addEventListener("keydown", (event) => {
-  const target = event.target;
+document.addEventListener("keydown", (event: KeyboardEvent) => {
+  const target = event.target as Element | null;
   const isInteractiveTarget =
     target instanceof Element &&
     target.matches("button, input, textarea");
@@ -910,7 +900,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 if (fileInput) {
-  fileInput.addEventListener("keydown", (event) => {
+  fileInput.addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
       fileInput.click();
@@ -934,6 +924,4 @@ const testHooks: RendererTestHooks = {
 
 if (typeof window !== "undefined") {
   window.__QRTY_TEST_HOOKS__ = testHooks;
-} else if (typeof globalThis !== "undefined") {
-  globalThis.__QRTY_TEST_HOOKS__ = testHooks;
 }
