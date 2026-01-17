@@ -32,11 +32,11 @@ jobs:
 
       - uses: jdx/mise-action@v2
 
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
-
       - name: Install dependencies
         run: pnpm install
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
 
       - name: Generate assets
         run: pnpm run build
