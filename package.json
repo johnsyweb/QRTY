@@ -9,13 +9,14 @@
     "format": "prettier --write \"src/**/*.{js,ts,html,css}\" \"scripts/**/*.{js,ts}\"",
     "format:check": "prettier --check \"src/**/*.{js,ts,html,css}\" \"scripts/**/*.{js,ts}\"",
     "typecheck": "tsc --noEmit",
+    "build:scripts": "tsc scripts/dev-server.ts scripts/generate-icons.ts --esModuleInterop --skipLibCheck",
     "build:renderer": "tsc -p tsconfig.renderer.json && cp -R build/renderer/* src/ && rm -rf build/renderer",
     "build:prepare": "rm -rf dist && mkdir -p dist && cp src/index.html src/styles.css src/sitemap.xml src/.nojekyll dist/ 2>/dev/null || true",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og-image": "node scripts/generate-og-image.js",
     "generate:qr-code": "node scripts/generate-qr-code.js",
     "generate:all": "pnpm run generate:icons && pnpm run generate:og-image && pnpm run generate:qr-code",
-    "build": "pnpm run build:prepare && pnpm run build:renderer && pnpm run generate:all"
+    "build": "pnpm run build:scripts && pnpm run build:prepare && pnpm run build:renderer && pnpm run generate:all"
   },
   "keywords": [
     "qr",

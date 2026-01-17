@@ -65,7 +65,8 @@ server.listen(PORT, HOST, () => {
   const addresses = Object.values(networkInterfaces)
     .flat()
     .filter(
-      (details) => details && !details.internal && details.family === "IPv4"
+      (details): details is os.NetworkInterfaceInfo =>
+        !!details && !details.internal && details.family === "IPv4"
     )
     .map((details) => details.address);
 
