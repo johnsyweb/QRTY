@@ -1,5 +1,5 @@
 import type * as ZXingNs from "@zxing/library";
-import type { ImageProcessingUtils as ImageProcessingUtilsModule } from "../utils/image-processing";
+import type { ImageProcessingUtils } from "../utils/image-processing";
 
 export type ZXingMultipleReader = {
   decodeMultiple: (bitmap: ZXingNs.BinaryBitmap) => ZXingNs.Result[];
@@ -14,7 +14,7 @@ export type ZXingModule = typeof ZXingNs & {
 
 export type ZXingDecodeHintType = ZXingNs.DecodeHintType;
 
-export type ImageProcessingUtils = ImageProcessingUtilsModule;
+export type { ImageProcessingUtils };
 
 export type RendererTestHooks = {
   mergeUniqueValues: (...lists: string[][]) => string[];

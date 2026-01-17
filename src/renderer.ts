@@ -5,6 +5,7 @@ import type {
   ImageProcessingUtils,
   ZXingDecodeHintType,
 } from "./types/renderer-hooks";
+import imageProcessingUtils from "./utils/image-processing";
 
 type JsQrPoint = { x: number; y: number };
 type JsQrResult = {
@@ -71,8 +72,7 @@ let stream: MediaStream | null = null;
 let scanInterval: number | null = null;
 let decodedValues: string[] = [];
 
-const imageUtils = window.QRTY_IMAGE_UTILS as ImageProcessingUtils | undefined;
-if (!imageUtils) {
+if (!imageProcessingUtils) {
   throw new Error("Image processing utilities are not initialised.");
 }
 
@@ -85,7 +85,7 @@ const {
   binariseImageData,
   thickenLinearFeatures,
   getBarcodeImagePayload,
-} = imageUtils;
+} = imageProcessingUtils;
 
 let multiFormatReader: InstanceType<ZXingModule["MultiFormatReader"]> | null =
   null;
