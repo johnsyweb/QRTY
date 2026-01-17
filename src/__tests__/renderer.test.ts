@@ -86,7 +86,7 @@ describe("renderer helpers", () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("../utils/image-processing.ts");
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require("../renderer.js");
+    require("../renderer.ts");
     hooks = (window.__QRTY_TEST_HOOKS__ || {}) as RendererTestHooks;
   });
 
