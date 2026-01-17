@@ -11,12 +11,12 @@
     "typecheck": "tsc --noEmit",
     "build:scripts": "tsc scripts/dev-server.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-icons.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-og-image.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-qr-code.ts --outDir scripts --esModuleInterop --skipLibCheck",
     "build:renderer": "tsc -p tsconfig.renderer.json && cp -R build/renderer/* src/ && rm -rf build/renderer",
-    "build:prepare": "rm -rf dist && mkdir -p dist && cp src/index.html src/styles.css src/sitemap.xml src/.nojekyll dist/ 2>/dev/null || true",
+    "build:prepare": "rm -rf dist && mkdir -p dist && cp src/index.html src/styles.css src/sitemap.xml src/.nojekyll dist/ 2>/dev/null || true && cp src/renderer.js src/utils/image-processing.js dist/ 2>/dev/null || true",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og-image": "node scripts/generate-og-image.js",
     "generate:qr-code": "node scripts/generate-qr-code.js",
     "generate:all": "pnpm run generate:icons && pnpm run generate:og-image && pnpm run generate:qr-code",
-    "build": "pnpm run build:scripts && pnpm run build:prepare && pnpm run build:renderer && pnpm run generate:all",
+    "build": "pnpm run build:scripts && pnpm run build:renderer && pnpm run build:prepare && pnpm run generate:all",
     "prepare": "husky"
   },
   "keywords": [
