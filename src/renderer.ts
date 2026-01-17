@@ -278,77 +278,17 @@ function scanQRCodesFromCanvas(canvas: HTMLCanvasElement): string[] {
   if (!ctx) {
     return [];
   }
+  
   const imageData = ctx.getImageData(0, 0, width, height);
-  const workingData = new Uint8ClampedArray(imageData.data);
-  const results: { data: string; centerX: number; centerY: number }[] = [];
-  const margin = 6;
+  const code = jsQR(imageData.data, width, height, {
+    inversionAttempts: "attemptBoth",
+  }) as JsQrResult | null;
 
-  for (;;) {
-    const code = jsQR(workingData, width, height, {
-      inversionAttempts: "attemptBoth",
-    }) as JsQrResult | null;
-
-    if (!code || !code.data) {
-      break;
-    }
-
-    const text = code.data.trim();
-    const location = code.location;
-
-    if (!location) {
-      break;
-    }
-
-    const corners = [
-      location.topLeftCorner,
-      location.topRightCorner,
-      location.bottomRightCorner,
-      location.bottomLeftCorner,
-    ];
-
-    const centerX = corners.reduce((sum, point) => sum + point.x, 0) / 4;
-    const centerY = corners.reduce((sum, point) => sum + point.y, 0) / 4;
-
-    if (text && !results.some((item) => item.data === text)) {
-      results.push({ data: text, centerX, centerY });
-    }
-
-    const minX = Math.max(
-      Math.floor(Math.min(...corners.map((point) => point.x)) - margin),
-      0
-    );
-    const maxX = Math.min(
-      Math.ceil(Math.max(...corners.map((point) => point.x)) + margin),
-      width - 1
-    );
-    const minY = Math.max(
-      Math.floor(Math.min(...corners.map((point) => point.y)) - margin),
-      0
-    );
-    const maxY = Math.min(
-      Math.ceil(Math.max(...corners.map((point) => point.y)) + margin),
-      height - 1
-    );
-
-    for (let y = minY; y <= maxY; y += 1) {
-      for (let x = minX; x <= maxX; x += 1) {
-        const offset = (y * width + x) * 4;
-        workingData[offset] = 255;
-        workingData[offset + 1] = 255;
-        workingData[offset + 2] = 255;
-        workingData[offset + 3] = 255;
-      }
-    }
+  if (!code || !code.data) {
+    return [];
   }
 
-  results.sort((a, b) => {
-    if (Math.abs(a.centerY - b.centerY) > 20) {
-      return a.centerY - b.centerY;
-    }
-    return a.centerX - b.centerX;
-  });
-
-  return results.map((item) => item.data);
+  return [code.data.trim()];
 }
 
 function getMultipleBarcodeReader(): ZXingMultipleReader | null {
@@ -773,13 +713,19 @@ function startScreenCapture(): void {
             if (!ctx) {
               return;
             }
-            ctx.drawImage(
-              videoPreview,
-              0,
-              0,
-              canvasPreview.width,
-              canvasPreview.height
-            );
+            
+            try {
+              ctx.drawImage(
+                videoPreview,
+                0,
+                0,
+                canvasPreview.width,
+                canvasPreview.height
+              );
+            } catch (error) {
+              console.error("[Screen Capture] Error drawing to canvas:", error);
+              return;
+            }
 
             const values = scanCodesFromCanvas(canvasPreview);
             if (values.length > 0 && !valuesAreEqual(values, decodedValues)) {
