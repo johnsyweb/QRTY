@@ -10,7 +10,7 @@ QR and barcode decoder using screen capture or image upload. Capture a section o
 - Open or share decoded URLs (with clipboard fallback) or copy any decoded text
 - Fully keyboard accessible
 - Minimal interface that doesn't block QR codes
-- Styled to match johnsy.com design
+- Styled to match www.johnsy.com design
 - Privacy-focused: all processing happens locally in your browser
 
 ## Setup
@@ -51,7 +51,7 @@ pnpm install
 
 ## Usage
 
-The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
+The application is a web app hosted at `www.johnsy.com/QRTY/`. To use it:
 
 1. Click "Upload Image" to upload an image file containing a QR code or barcode
 2. Any decoded values will be displayed automatically
@@ -71,7 +71,7 @@ The application is a web app hosted at `johnsy.com/QRTY/`. To use it:
 
 - Meta QR code (links to the hosted app):
 
-  ![QR code for https://johnsy.com/QRTY/](./src/qr-code.png)
+  ![QR code for https://www.johnsy.com/QRTY/](./src/qr-code.png)
 
 ## Keyboard Shortcuts
 
@@ -110,7 +110,7 @@ The app is set up for automatic deployment to GitHub Pages:
 
 ### Manual Deployment
 
-To manually deploy to `johnsy.com/QRTY/`:
+To manually deploy to `www.johnsy.com/QRTY/`:
 
 1. Generate assets: `pnpm run build`
 2. Upload the contents of the `src/` directory to the web server at `/QRTY/`
