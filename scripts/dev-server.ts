@@ -1,14 +1,14 @@
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
+import http from "http";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 const PORT = 8000;
 const BASE_PATH = "/QRTY";
-const SRC_DIR = path.join(__dirname, "..", "src");
+const DIST_DIR = path.join(__dirname, "..", "dist");
 const HOST = process.env.HOST || "0.0.0.0";
 
-const MIME_TYPES = {
+const MIME_TYPES: Record<string, string> = {
   ".html": "text/html",
   ".js": "application/javascript",
   ".css": "text/css",
@@ -20,12 +20,12 @@ const MIME_TYPES = {
   ".ico": "image/x-icon",
 };
 
-function getMimeType(filePath) {
+function getMimeType(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
   return MIME_TYPES[ext] || "application/octet-stream";
 }
 
-function serveFile(filePath, res) {
+function serveFile(filePath: string, res: http.ServerResponse) {
   fs.readFile(filePath, (err, data) => {
     if (err) {
       res.writeHead(404);
@@ -40,7 +40,8 @@ function serveFile(filePath, res) {
 }
 
 const server = http.createServer((req, res) => {
-  let urlPath = req.url.split("?")[0];
+  const rawUrl = req.url ?? "/";
+  let urlPath = rawUrl.split("?")[0] || "/";
 
   if (urlPath === BASE_PATH || urlPath === `${BASE_PATH}/`) {
     urlPath = `${BASE_PATH}/index.html`;
@@ -48,7 +49,7 @@ const server = http.createServer((req, res) => {
 
   if (urlPath.startsWith(BASE_PATH)) {
     const filePath = path.join(
-      SRC_DIR,
+      DIST_DIR,
       urlPath.slice(BASE_PATH.length) || "index.html"
     );
 

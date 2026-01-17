@@ -4,3 +4,7 @@ build/
 *.log
 .DS_Store
 
+# Compiled JavaScript from TypeScript sources
+src/*.js
+scripts/*.js
+

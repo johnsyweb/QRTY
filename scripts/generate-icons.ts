@@ -1,7 +1,7 @@
 // @ts-check
 
 const { chromium } = require("playwright");
-const { readFileSync, writeFileSync } = require("fs");
+const { readFileSync, writeFileSync, mkdirSync } = require("fs");
 const { join } = require("path");
 
 /**
@@ -9,6 +9,7 @@ const { join } = require("path");
  * @returns {Promise<void>}
  */
 async function generateIcons() {
+  mkdirSync("dist", { recursive: true });
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
@@ -47,7 +48,7 @@ async function generateIcons() {
       omitBackground: false,
     });
 
-    const outputPath = join(process.cwd(), "src", name);
+    const outputPath = join(process.cwd(), "dist", name);
     writeFileSync(outputPath, screenshot);
     console.log(`✓ Generated ${name} (${size}x${size})`);
   }

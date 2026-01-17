@@ -736,6 +736,16 @@ function startScreenCapture(): void {
   }
 
   if (!canvasPreview || !videoPreview || !videoContainer) {
+    console.error("Missing required DOM elements for screen capture");
+    showError("Screen capture setup failed. Required elements not found.");
+    return;
+  }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    console.error("getDisplayMedia not supported");
+    showError(
+      "Screen capture is not supported in your browser. Please use Chrome, Firefox, or Edge, or use the file upload option instead."
+    );
     return;
   }
 
@@ -783,6 +793,7 @@ function startScreenCapture(): void {
       });
     })
     .catch((error: DOMException) => {
+      console.error("Screen capture error:", error);
       let errorMessage = "Failed to capture screen.";
       if (
         error.name === "NotAllowedError" ||
@@ -867,7 +878,11 @@ if (resetBtn) {
 }
 
 if (captureBtn) {
-  captureBtn.addEventListener("click", startScreenCapture);
+  console.log("Attaching click listener to capture button");
+  captureBtn.addEventListener("click", () => {
+    console.log("Capture button clicked!");
+    startScreenCapture();
+  });
 }
 
 document.addEventListener("keydown", (event: KeyboardEvent) => {
