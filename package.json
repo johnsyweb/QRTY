@@ -3,20 +3,20 @@
   "version": "2.0.0",
   "description": "QR code decoder using screen capture or file upload",
   "scripts": {
-    "start": "pnpm run build && node scripts/dev-server.js",
+    "dev": "vite",
+    "preview": "vite preview",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.{js,ts,html,css}\" \"scripts/**/*.{js,ts}\"",
     "format:check": "prettier --check \"src/**/*.{js,ts,html,css}\" \"scripts/**/*.{js,ts}\"",
     "typecheck": "tsc --noEmit",
-    "build:scripts": "tsc scripts/dev-server.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-icons.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-og-image.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-qr-code.ts --outDir scripts --esModuleInterop --skipLibCheck",
-    "build:renderer": "tsc -p tsconfig.renderer.json && cp -R build/renderer/* src/ && rm -rf build/renderer",
-    "build:prepare": "rm -rf dist && mkdir -p dist && cp src/index.html src/styles.css src/sitemap.xml src/.nojekyll dist/ 2>/dev/null || true && cp src/renderer.js src/utils/image-processing.js dist/ 2>/dev/null || true",
+    "build:scripts": "tsc scripts/generate-icons.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-og-image.ts --outDir scripts --esModuleInterop --skipLibCheck && tsc scripts/generate-qr-code.ts --outDir scripts --esModuleInterop --skipLibCheck",
+    "build:assets": "cp src/sitemap.xml src/.nojekyll dist/ 2>/dev/null || true",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og-image": "node scripts/generate-og-image.js",
     "generate:qr-code": "node scripts/generate-qr-code.js",
     "generate:all": "pnpm run generate:icons && pnpm run generate:og-image && pnpm run generate:qr-code",
-    "build": "pnpm run build:scripts && pnpm run build:renderer && pnpm run build:prepare && pnpm run generate:all",
+    "build": "pnpm run build:scripts && vite build && pnpm run build:assets && pnpm run generate:all",
     "prepare": "husky"
   },
   "keywords": [
@@ -47,7 +47,8 @@
     "prettier": "^3.8.0",
     "qrcode": "^1.5.4",
     "ts-jest": "^29.4.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   },
   "dependencies": {
     "jsqr": "^1.4.0"
