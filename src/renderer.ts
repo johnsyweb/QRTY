@@ -880,9 +880,7 @@ if (resetBtn) {
 }
 
 if (captureBtn) {
-  console.log("Attaching click listener to capture button");
   captureBtn.addEventListener("click", () => {
-    console.log("Capture button clicked!");
     startScreenCapture();
   });
 }
