@@ -32,6 +32,9 @@ jobs:
 
       - uses: jdx/mise-action@v2
 
+      - name: Install Playwright browsers
+        uses: microsoft/playwright-github-action@v1
+
       - name: Install dependencies
         run: pnpm install
 
@@ -40,8 +43,8 @@ jobs:
 
       - name: Verify assets exist
         run: |
-          ls -la src/*.png src/*.svg
-          test -f src/og-image.png || exit 1
+          ls -la dist/*.png
+          test -f dist/og-image.png || exit 1
           echo "✓ All assets generated successfully"
 
       - name: Setup Pages
