@@ -9,7 +9,7 @@
     "format": "prettier --write \"src/**/*.{js,ts,html,css}\" \"scripts/**/*.{js,ts}\"",
     "format:check": "prettier --check \"src/**/*.{js,ts,html,css}\" \"scripts/**/*.{js,ts}\"",
     "typecheck": "tsc --noEmit",
-    "build:scripts": "tsc scripts/dev-server.ts scripts/generate-icons.ts --esModuleInterop --skipLibCheck",
+    "build:scripts": "tsc scripts/dev-server.ts --esModuleInterop --skipLibCheck && tsc scripts/generate-icons.ts --esModuleInterop --skipLibCheck && tsc scripts/generate-og-image.ts --esModuleInterop --skipLibCheck && tsc scripts/generate-qr-code.ts --esModuleInterop --skipLibCheck",
     "build:renderer": "tsc -p tsconfig.renderer.json && cp -R build/renderer/* src/ && rm -rf build/renderer",
     "build:prepare": "rm -rf dist && mkdir -p dist && cp src/index.html src/styles.css src/sitemap.xml src/.nojekyll dist/ 2>/dev/null || true",
     "generate:icons": "node scripts/generate-icons.js",
