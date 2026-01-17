@@ -1,5 +1,5 @@
 .instructions {
-  background: #eee8d5;
+  background: #fdf6e3;
   border-left: 4px solid #268bd2;
   padding: 18px 20px;
   margin-bottom: 24px;
@@ -24,7 +24,7 @@
 }
 
 .privacy-notice {
-  border-top: 1px solid #d7cec0;
+  border-top: 1px solid #268bd2;
   margin-top: 16px;
   padding-top: 16px;
 }
