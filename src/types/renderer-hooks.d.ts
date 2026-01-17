@@ -29,10 +29,7 @@ export type RendererTestHooks = {
     button: HTMLButtonElement,
     options?: { isUrl?: boolean }
   ) => Promise<void>;
-  copyToClipboard: (
-    value: string,
-    button: HTMLButtonElement
-  ) => Promise<void>;
+  copyToClipboard: (value: string, button: HTMLButtonElement) => Promise<void>;
   valuesAreEqual: (a: string[], b: string[]) => boolean;
   resetBarcodeReaders?: () => void;
 };

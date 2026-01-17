@@ -7,13 +7,17 @@ export interface ImageProcessingUtils {
     scaleFactor: number
   ) => {
     canvas: HTMLCanvasElement;
-    context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+    context:
+      | CanvasRenderingContext2D
+      | OffscreenCanvasRenderingContext2D
+      | null;
   };
-  addQuietZone: (
-    canvas: HTMLCanvasElement
-  ) => {
+  addQuietZone: (canvas: HTMLCanvasElement) => {
     canvas: HTMLCanvasElement;
-    context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+    context:
+      | CanvasRenderingContext2D
+      | OffscreenCanvasRenderingContext2D
+      | null;
   };
   normaliseImageData: (imageData: ImageData) => void;
   computeOtsuThreshold: (histogram: Uint32Array, totalPixels: number) => number;
@@ -80,9 +84,7 @@ function getScaledCanvas(
   return { canvas: scaledCanvas, context: scaledContext };
 }
 
-function addQuietZone(
-  canvas: HTMLCanvasElement
-): {
+function addQuietZone(canvas: HTMLCanvasElement): {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
 } {
@@ -340,8 +342,9 @@ const utils: ImageProcessingUtils = {
 };
 
 if (typeof window !== "undefined") {
-  (window as typeof window & { QRTY_IMAGE_UTILS?: ImageProcessingUtils }).QRTY_IMAGE_UTILS =
-    utils;
+  (
+    window as typeof window & { QRTY_IMAGE_UTILS?: ImageProcessingUtils }
+  ).QRTY_IMAGE_UTILS = utils;
 }
 
 declare global {
@@ -351,4 +354,3 @@ declare global {
 }
 
 export default utils;
-

@@ -5,16 +5,7 @@ const utils = require("../utils/image-processing.ts")
 
 describe("image processing utils", () => {
   test("normaliseImageData stretches luminance range", () => {
-    const data = new Uint8ClampedArray([
-      10,
-      10,
-      10,
-      255,
-      200,
-      200,
-      200,
-      255,
-    ]);
+    const data = new Uint8ClampedArray([10, 10, 10, 255, 200, 200, 200, 255]);
     const imageData = {
       data,
       width: 1,
@@ -24,7 +15,9 @@ describe("image processing utils", () => {
     utils.normaliseImageData(imageData);
 
     expect(Array.from(imageData.data.slice(0, 4))).toEqual([0, 0, 0, 255]);
-    expect(Array.from(imageData.data.slice(4, 8))).toEqual([255, 255, 255, 255]);
+    expect(Array.from(imageData.data.slice(4, 8))).toEqual([
+      255, 255, 255, 255,
+    ]);
   });
 
   test("computeOtsuThreshold prefers balanced split", () => {
@@ -44,18 +37,7 @@ describe("image processing utils", () => {
 
   test("binariseImageData converts pixels to black or white", () => {
     const data = new Uint8ClampedArray([
-      0,
-      0,
-      0,
-      255,
-      120,
-      120,
-      120,
-      255,
-      240,
-      240,
-      240,
-      255,
+      0, 0, 0, 255, 120, 120, 120, 255, 240, 240, 240, 255,
     ]);
     const imageData = {
       data,
@@ -106,4 +88,3 @@ describe("image processing utils", () => {
     expect(blackChannels[3]).toBe(0);
   });
 });
-

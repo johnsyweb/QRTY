@@ -26,41 +26,43 @@ declare const jsQR: (
 
 type ZXingResultInstance = InstanceType<ZXingModule["Result"]>;
 type ZXingBinaryBitmapInstance = InstanceType<ZXingModule["BinaryBitmap"]>;
-type ZXingRGBLuminanceInstance = InstanceType<ZXingModule["RGBLuminanceSource"]>;
+type ZXingRGBLuminanceInstance = InstanceType<
+  ZXingModule["RGBLuminanceSource"]
+>;
 type ZXingBinarizerConstructor =
   | ZXingModule["HybridBinarizer"]
   | ZXingModule["GlobalHistogramBinarizer"];
 
-const captureBtn = document.getElementById("capture-btn") as
-  | HTMLButtonElement
-  | null;
-const fileInput = document.getElementById("file-input") as
-  | HTMLInputElement
-  | null;
-const videoContainer = document.getElementById("video-container") as
-  | HTMLDivElement
-  | null;
-const videoPreview = document.getElementById("video-preview") as
-  | HTMLVideoElement
-  | null;
-const canvasPreview = document.getElementById("canvas-preview") as
-  | HTMLCanvasElement
-  | null;
-const stopCaptureBtn = document.getElementById("stop-capture-btn") as
-  | HTMLButtonElement
-  | null;
-const resultContainer = document.getElementById("result-container") as
-  | HTMLDivElement
-  | null;
-const resultList = document.getElementById("result-list") as
-  | HTMLDivElement
-  | null;
-const resetBtn = document.getElementById("reset-btn") as
-  | HTMLButtonElement
-  | null;
-const errorContainer = document.getElementById("error-container") as
-  | HTMLDivElement
-  | null;
+const captureBtn = document.getElementById(
+  "capture-btn"
+) as HTMLButtonElement | null;
+const fileInput = document.getElementById(
+  "file-input"
+) as HTMLInputElement | null;
+const videoContainer = document.getElementById(
+  "video-container"
+) as HTMLDivElement | null;
+const videoPreview = document.getElementById(
+  "video-preview"
+) as HTMLVideoElement | null;
+const canvasPreview = document.getElementById(
+  "canvas-preview"
+) as HTMLCanvasElement | null;
+const stopCaptureBtn = document.getElementById(
+  "stop-capture-btn"
+) as HTMLButtonElement | null;
+const resultContainer = document.getElementById(
+  "result-container"
+) as HTMLDivElement | null;
+const resultList = document.getElementById(
+  "result-list"
+) as HTMLDivElement | null;
+const resetBtn = document.getElementById(
+  "reset-btn"
+) as HTMLButtonElement | null;
+const errorContainer = document.getElementById(
+  "error-container"
+) as HTMLDivElement | null;
 const captureSupportNote = document.getElementById(
   "capture-support-note"
 ) as HTMLParagraphElement | null;
@@ -684,7 +686,7 @@ function scanBarcodesFromCanvas(canvas: HTMLCanvasElement): string[] {
     return [];
   } finally {
     if (typeof multiFormatReader?.reset === "function") {
-    multiFormatReader?.reset();
+      multiFormatReader?.reset();
     }
   }
 }
@@ -888,21 +890,19 @@ if (captureBtn) {
 document.addEventListener("keydown", (event: KeyboardEvent) => {
   const target = event.target as Element | null;
   const isInteractiveTarget =
-    target instanceof Element &&
-    target.matches("button, input, textarea");
+    target instanceof Element && target.matches("button, input, textarea");
   if (event.code === "Escape") {
     if (stream) {
       event.preventDefault();
       stopCapture();
-    } else if (resultContainer && !resultContainer.classList.contains("hidden")) {
+    } else if (
+      resultContainer &&
+      !resultContainer.classList.contains("hidden")
+    ) {
       event.preventDefault();
       resetState();
     }
-  } else if (
-    event.code === "Space" &&
-    captureBtn &&
-    !isInteractiveTarget
-  ) {
+  } else if (event.code === "Space" && captureBtn && !isInteractiveTarget) {
     if (stream) {
       event.preventDefault();
       stopCapture();

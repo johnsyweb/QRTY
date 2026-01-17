@@ -1,9 +1,6 @@
 /* eslint-env jest */
 
-import type {
-  RendererTestHooks,
-  ZXingModule,
-} from "../types/renderer-hooks";
+import type { RendererTestHooks, ZXingModule } from "../types/renderer-hooks";
 
 function createImageDataStub(
   data: Uint8ClampedArray,
@@ -207,16 +204,18 @@ describe("renderer helpers", () => {
       BarcodeFormat: {
         CODE_128: "CODE_128",
       } as any,
-      HybridBinarizer: jest
-        .fn()
-        .mockImplementation(function HybridBinarizer(this: any, source: any) {
-          this.source = source;
-        }),
-      BinaryBitmap: jest
-        .fn()
-        .mockImplementation(function BinaryBitmap(this: any, binarizer: any) {
-          this.binarizer = binarizer;
-        }),
+      HybridBinarizer: jest.fn().mockImplementation(function HybridBinarizer(
+        this: any,
+        source: any
+      ) {
+        this.source = source;
+      }),
+      BinaryBitmap: jest.fn().mockImplementation(function BinaryBitmap(
+        this: any,
+        binarizer: any
+      ) {
+        this.binarizer = binarizer;
+      }),
       RGBLuminanceSource: jest
         .fn()
         .mockImplementation(function RGBLuminanceSource(
@@ -276,9 +275,7 @@ describe("renderer helpers", () => {
     const [processedData] = zxMock.RGBLuminanceSource.mock.calls[0];
     expect(processedData).toBeInstanceOf(Uint8ClampedArray);
     expect(processedData.some((channel: number) => channel === 0)).toBe(true);
-    expect(
-      processedData.some((channel: number) => channel === 255)
-    ).toBe(true);
+    expect(processedData.some((channel: number) => channel === 255)).toBe(true);
     expect(reset).toHaveBeenCalled();
   });
 
