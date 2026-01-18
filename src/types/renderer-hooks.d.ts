@@ -41,7 +41,6 @@ declare global {
     QRTY_IMAGE_UTILS?: ImageProcessingUtils;
   }
 
-  // eslint-disable-next-line no-var
   var jsQR: (...args: unknown[]) => unknown;
 }
 

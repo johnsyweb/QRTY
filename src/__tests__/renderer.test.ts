@@ -1,5 +1,3 @@
-/* eslint-env jest */
-
 import type { RendererTestHooks, ZXingModule } from "../types/renderer-hooks";
 
 function createImageDataStub(
@@ -80,9 +78,7 @@ describe("renderer helpers", () => {
       .spyOn(HTMLCanvasElement.prototype, "getContext")
       .mockImplementation(() => canvasContextStub);
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("../utils/image-processing.ts");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("../renderer.ts");
     hooks = (window.__QRTY_TEST_HOOKS__ || {}) as RendererTestHooks;
   });
@@ -280,11 +276,8 @@ describe("renderer helpers", () => {
   });
 
   test("scanBarcodesFromCanvas decodes a Foretoken-generated barcode", () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createCanvas } = require("@napi-rs/canvas");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const JsBarcode = require("jsbarcode");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ZXingLib = require("@zxing/library");
 
     const token = `P${String(1030).padStart(4, "0")}`;
