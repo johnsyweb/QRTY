@@ -30,9 +30,10 @@
         "prioritize-lcp-image": "off",
         "unused-javascript": "off",
         "uses-long-cache-ttl": "off",
-        "network-dependency-tree-insight": "off",
-        "cache-insight": "off",
-        "render-blocking-insight": "off",
+        "network-dependency-tree-insight": "warn",
+        "cache-insight": "warn",
+        "render-blocking-insight": "warn",
+        "render-blocking-resources": "warn",
         "cls-culprits-insight": "off"
       }
     },
