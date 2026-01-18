@@ -11,15 +11,27 @@ async function generateQRCode() {
   const url = "https://www.johnsy.com/QRTY/";
 
   try {
-    const qrPath = join(process.cwd(), "dist", "qr-code.png");
+    const qrDistPath = join(process.cwd(), "dist", "qr-code.png");
 
-    await QRCode.toFile(qrPath, url, {
+    await QRCode.toFile(qrDistPath, url, {
       type: "png",
       width: 300,
       margin: 1,
       color: {
-        dark: "#268bd2",
-        light: "#fdf6e3",
+        dark: "#1565C0",
+        light: "#ffffff",
+      },
+    });
+
+    // Also emit to assets for README previews
+    const qrAssetsPath = join(process.cwd(), "assets", "qr-code.png");
+    await QRCode.toFile(qrAssetsPath, url, {
+      type: "png",
+      width: 300,
+      margin: 1,
+      color: {
+        dark: "#1565C0",
+        light: "#ffffff",
       },
     });
 

@@ -44,3 +44,68 @@ jobs:
       - name: Type check
         run: pnpm run typecheck
 
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v2
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  validate-html:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Run HTML validation
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "${PWD}/dist:/site" \
+            ghcr.io/validator/validator:latest \
+            vnu --errors-only --skip-non-html /site 2>&1 || echo "::warning::HTML validation found issues"
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v2
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Lighthouse CI
+        run: pnpm install -g @lhci/cli@0.14.x
+
+      - name: Run Lighthouse CI (light mode)
+        run: lhci autorun
+
+      - name: Run Lighthouse CI (dark mode)
+        run: lhci autorun --config=.lighthouserc-dark.json

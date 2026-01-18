@@ -1,3 +1,11 @@
+.DS_Store
+
+# Node/PNPM
+node_modules/
+dist/
+
+# Lighthouse CI reports
+.lighthouseci/lhr-*.html
 node_modules/
 dist/
 build/

@@ -16,7 +16,8 @@
     "generate:og-image": "node scripts/generate-og-image.js",
     "generate:qr-code": "node scripts/generate-qr-code.js",
     "generate:all": "pnpm run generate:icons && pnpm run generate:og-image && pnpm run generate:qr-code",
-    "build": "pnpm run build:scripts && vite build && pnpm run build:assets && pnpm run generate:all",
+    "sync:assets": "mkdir -p assets && cp -f dist/og-image.png assets/og-image.png && cp -f dist/qr-code.png assets/qr-code.png && cp -f dist/icon-512.png assets/icon-512.png && cp -f dist/icon-192.png assets/icon-192.png && cp -f dist/favicon-32x32.png assets/favicon-32x32.png && cp -f dist/favicon-16x16.png assets/favicon-16x16.png && cp -f dist/apple-touch-icon.png assets/apple-touch-icon.png",
+    "build": "pnpm run build:scripts && vite build && pnpm run build:assets && pnpm run generate:all && pnpm run sync:assets",
     "prepare": "husky"
   },
   "keywords": [
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.28.6",
     "@babel/preset-typescript": "^7.28.5",
+    "@lhci/cli": "^0.14.0",
     "@napi-rs/canvas": "^0.1.88",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",

@@ -2,6 +2,12 @@
 
 QR and barcode decoder using screen capture or image upload. Capture a section of your screen to automatically scan codes, or upload an image file.
 
+## Why QRTY?
+
+Have you ever received a QR code in an email and wanted to use it, but it's just an image, not a clickable link? QRTY solves this problem by letting you quickly convert QR codes from images into usable URLs that you can click, copy, or share.
+
+Whether you receive QR codes via email, screenshots, or any other image format, QRTY processes them entirely in your browser (no data leaves your device) and gives you immediate access to the URLs or data they contain.
+
 ## Features
 
 - Capture your screen to automatically detect QR codes and barcodes
@@ -61,17 +67,17 @@ The application is a web app hosted at `www.johnsy.com/QRTY/`. To use it:
 
 ## Screenshots
 
-![Screenshot of QRTY displaying decoded QR code results](./src/og-image.png)
+![Screenshot of QRTY displaying decoded QR code results](./assets/og-image.png)
 
 ## Iconography
 
 - Primary app icon:
 
-  ![QRTY app icon showing stylised QR code on cream background](./src/icon-512.png)
+  ![QRTY app icon showing stylised QR code](./assets/icon-512.png)
 
 - Meta QR code (links to the hosted app):
 
-  ![QR code for https://www.johnsy.com/QRTY/](./src/qr-code.png)
+  ![QR code for https://www.johnsy.com/QRTY/](./assets/qr-code.png)
 
 ## Keyboard Shortcuts
 
@@ -80,18 +86,20 @@ The application is a web app hosted at `www.johnsy.com/QRTY/`. To use it:
 
 ## Development
 
-- `pnpm start` - Run local development server
-  - Served from `http://localhost:8000/QRTY/`
-  - Also binds to your local network (e.g. `http://<your-ip>:8000/QRTY/`) so you can test on phones/tablets
+- `pnpm dev` - Run local development server
+  - Served from `http://localhost:5173/QRTY/`
+  - Use `pnpm dev --host` to bind to your local network (e.g. `http://<your-ip>:5173/QRTY/`) for testing on phones/tablets
+- `pnpm preview` - Preview the production build locally
+  - Served from `http://localhost:4173/QRTY/` by default
 - `pnpm run lint` - Run ESLint
 - `pnpm run format` - Format code with Prettier
+- `pnpm run format:check` - Check code formatting with Prettier
 - `pnpm run typecheck` - Run TypeScript checks (includes renderer helpers and build scripts)
-- `pnpm run build:renderer` - Compile the TypeScript renderer to `src/renderer.js`
 - `pnpm run generate:icons` - Generate icon files from SVG
 - `pnpm run generate:og-image` - Generate OpenGraph image
 - `pnpm run generate:qr-code` - Generate QR code image for the site URL
 - `pnpm run generate:all` - Generate all assets
-- `pnpm run build` - Generate all assets (alias for generate:all)
+- `pnpm run build` - Build the site and assets into `dist/` (runs Vite build, copies sitemap and `.nojekyll`, and generates icons, OG image, and QR code)
 
 ## Requirements
 
@@ -113,8 +121,8 @@ The app is set up for automatic deployment to GitHub Pages:
 To manually deploy to `www.johnsy.com/QRTY/`:
 
 1. Generate assets: `pnpm run build`
-2. Upload the contents of the `src/` directory to the web server at `/QRTY/`
-3. Ensure the `.nojekyll` file is included (prevents Jekyll processing on GitHub Pages)
+2. Upload the contents of the `dist/` directory to the web server at `/QRTY/`
+3. Ensure the `.nojekyll` file is included (prevents Jekyll processing on GitHub Pages) - this is generated into `dist/` during the build
 
 The app uses only static files (HTML, CSS, JavaScript) and CDN-hosted libraries (jsQR and ZXing), so no server-side processing is required.
 

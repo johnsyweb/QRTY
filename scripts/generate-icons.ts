@@ -14,7 +14,23 @@ async function generateIcons() {
   const page = await browser.newPage();
 
   const svgPath = join(process.cwd(), "src/icon.svg");
-  const svgContent = readFileSync(svgPath, "utf-8");
+  let svgContent = readFileSync(svgPath, "utf-8");
+
+  // Normalize palette to match main site's accessible colours
+  // Map Solarized-inspired colours to Material Design 3 palette
+  const colourMap: Record<string, string> = {
+    "#fdf6e3": "#f5f5f5", // light surface
+    "#fefaf0": "#fafafa", // lighter surface
+    "#268bd2": "#1565C0", // primary
+    "#657b83": "#616161", // muted text
+    "#2aa198": "#66BB6A", // accent (green)
+    "#b58900": "#FFB300", // accent (amber)
+  };
+
+  for (const [from, to] of Object.entries(colourMap)) {
+    const re = new RegExp(from, "gi");
+    svgContent = svgContent.replace(re, to);
+  }
 
   /** @type {{ size: number; name: string }[]} */
   const sizes = [
@@ -48,9 +64,25 @@ async function generateIcons() {
       omitBackground: false,
     });
 
-    const outputPath = join(process.cwd(), "dist", name);
-    writeFileSync(outputPath, screenshot);
-    console.log(`✓ Generated ${name} (${size}x${size})`);
+    const distOutputPath = join(process.cwd(), "dist", name);
+    writeFileSync(distOutputPath, screenshot);
+
+    // Also emit selected icons to assets for README previews when applicable
+    if (
+      name === "icon-512.png" ||
+      name === "apple-touch-icon.png" ||
+      name === "favicon-32x32.png" ||
+      name === "favicon-16x16.png" ||
+      name === "icon-192.png"
+    ) {
+      const assetsOutputPath = join(process.cwd(), "assets", name);
+      writeFileSync(assetsOutputPath, screenshot);
+    }
+
+    console.log(
+      `✓ Generated ${name} (${size}x${size}) in dist/` +
+        (name ? " and assets/" : "")
+    );
   }
 
   await browser.close();

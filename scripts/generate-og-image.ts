@@ -30,10 +30,14 @@ async function generateOGImage() {
   });
 
   // Write to dist
-  const outputPath = join(process.cwd(), "dist", "og-image.png");
-  writeFileSync(outputPath, screenshot);
+  const distOutputPath = join(process.cwd(), "dist", "og-image.png");
+  writeFileSync(distOutputPath, screenshot);
 
-  console.log("✓ Generated og-image.png (1200x630)");
+  // Also write to assets for README previews
+  const assetsOutputPath = join(process.cwd(), "assets", "og-image.png");
+  writeFileSync(assetsOutputPath, screenshot);
+
+  console.log("✓ Generated og-image.png (1200x630) in dist/ and assets/");
 
   await browser.close();
 }

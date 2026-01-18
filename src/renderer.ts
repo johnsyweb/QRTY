@@ -278,7 +278,7 @@ function scanQRCodesFromCanvas(canvas: HTMLCanvasElement): string[] {
   if (!ctx) {
     return [];
   }
-  
+
   const imageData = ctx.getImageData(0, 0, width, height);
   const code = jsQR(imageData.data, width, height, {
     inversionAttempts: "attemptBoth",
@@ -713,7 +713,7 @@ function startScreenCapture(): void {
             if (!ctx) {
               return;
             }
-            
+
             try {
               ctx.drawImage(
                 videoPreview,
@@ -748,7 +748,7 @@ function startScreenCapture(): void {
         error.name === "PermissionDeniedError"
       ) {
         errorMessage =
-          "Screen capture permission denied. Please allow screen sharing when prompted. All processing happens locally—no data is sent to any server.";
+          "Screen capture permission denied. Please allow screen sharing when prompted. All processing happens locally; no data is sent to any server.";
       } else if (error.name === "NotSupportedError") {
         errorMessage =
           "Screen capture is not supported in your browser. Please use Chrome, Firefox, or Edge, or use the file upload option instead.";
