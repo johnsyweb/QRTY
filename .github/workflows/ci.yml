@@ -104,11 +104,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install Lighthouse CI
-        run: pnpm install -g @lhci/cli@0.14.x
-
       - name: Run Lighthouse CI (light mode)
-        run: lhci autorun
+        run: pnpm exec lhci autorun
 
       - name: Run Lighthouse CI (dark mode)
-        run: lhci autorun --config=.lighthouserc-dark.json
+        run: pnpm exec lhci autorun --config=.lighthouserc-dark.json
