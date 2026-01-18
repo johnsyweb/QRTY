@@ -44,15 +44,6 @@ module.exports = [
   },
   {
     files: ['src/**/*.test.ts'],
-    languageOptions: {
-      globals: {
-        describe: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-      },
-    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
