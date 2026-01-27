@@ -3,6 +3,7 @@
   border-left: 4px solid #1565c0;
   padding: 18px 20px;
   margin-bottom: 24px;
+  content-visibility: auto;
 }
 
 .why-qrty {
@@ -225,6 +226,8 @@
   display: block;
   border-radius: 4px;
   border: 1px solid #e0e0e0;
+  aspect-ratio: auto;
+  contain: layout style paint;
 }
 
 #canvas-preview {

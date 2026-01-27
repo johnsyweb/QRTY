@@ -3,14 +3,14 @@
 # Node/PNPM
 node_modules/
 dist/
+build/
+
+# Logs
+*.log
 
 # Lighthouse CI reports
-.lighthouseci/lhr-*.html
-node_modules/
-dist/
-build/
-*.log
-.DS_Store
+.lighthouseci/*.html
+.lighthouseci/*.json
 
 # Compiled JavaScript from TypeScript sources
 src/**/*.js
