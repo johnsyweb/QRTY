@@ -8,9 +8,9 @@ build/
 # Logs
 *.log
 
-# Lighthouse CI reports
-.lighthouseci/*.html
-.lighthouseci/*.json
+# Lighthouse
+lighthouse-report.json
+.lighthouseci/
 
 # Compiled JavaScript from TypeScript sources
 src/**/*.js

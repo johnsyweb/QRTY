@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   pull_request:
@@ -7,33 +7,70 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: jdx/mise-action@v2
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm test
+      - name: Build
+        run: pnpm run build
 
-  lint-and-format:
+      - name: Cache dist
+        uses: actions/cache/save@v4
+        with:
+          path: dist
+          key: build-${{ hashFiles('**/pnpm-lock.yaml', 'src/**', 'scripts/**', 'vite.config.ts') }}
+
+  lint-test:
     runs-on: ubuntu-latest
+    needs: build
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: jdx/mise-action@v2
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore dist cache
+        uses: actions/cache/restore@v4
+        id: dist-cache
+        with:
+          path: dist
+          key: build-${{ hashFiles('**/pnpm-lock.yaml', 'src/**', 'scripts/**', 'vite.config.ts') }}
+
+      - name: Build if cache miss
+        if: steps.dist-cache.outputs.cache-hit != 'true'
+        run: pnpm run build
 
       - name: Check formatting
         run: pnpm run format:check || (echo "::error::Code is not formatted. Run 'pnpm run format' to fix." && exit 1)
@@ -44,40 +81,70 @@ jobs:
       - name: Type check
         run: pnpm run typecheck
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Run tests
+        run: pnpm run test
 
-      - uses: jdx/mise-action@v2
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install chromium
+      - name: Restore dist cache
+        uses: actions/cache/restore@v4
+        id: dist-cache
+        with:
+          path: dist
+          key: build-${{ hashFiles('**/pnpm-lock.yaml', 'src/**', 'scripts/**', 'vite.config.ts') }}
 
-      - name: Build
+      - name: Build if cache miss
+        if: steps.dist-cache.outputs.cache-hit != 'true'
         run: pnpm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 1
+      - name: Install Chromium for Lighthouse
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Lighthouse
+        run: pnpm run lighthouse
+        env:
+          BASE_URL: /${{ github.event.repository.name }}/
 
   validate-html:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Setup mise
+        uses: jdx/mise-action@v2
         with:
-          name: dist
-          path: dist/
+          cache: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore dist cache
+        uses: actions/cache/restore@v4
+        id: dist-cache
+        with:
+          path: dist
+          key: build-${{ hashFiles('**/pnpm-lock.yaml', 'src/**', 'scripts/**', 'vite.config.ts') }}
+
+      - name: Build if cache miss
+        if: steps.dist-cache.outputs.cache-hit != 'true'
+        run: pnpm run build
 
       - name: Run HTML validation
         continue-on-error: true
@@ -87,25 +154,46 @@ jobs:
             ghcr.io/validator/validator:latest \
             vnu --errors-only --skip-non-html /site 2>&1 || echo "::warning::HTML validation found issues"
 
-  lighthouse:
+  build-for-deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, lint-test, lighthouse, validate-html]
+    if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: jdx/mise-action@v2
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Setup mise
+        uses: jdx/mise-action@v2
         with:
-          name: dist
-          path: dist/
+          cache: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Run Lighthouse CI (light mode)
-        run: pnpm exec lhci autorun
+      - name: Build
+        run: pnpm run build
 
-      - name: Run Lighthouse CI (dark mode)
-        run: pnpm exec lhci autorun --config=.lighthouserc-dark.json
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-for-deploy
+    if: success()
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+</think>
+Fixing validate-html: restoring the cache and building only when the cache misses.
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+StrReplace
