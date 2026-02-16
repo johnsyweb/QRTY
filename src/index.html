@@ -94,16 +94,24 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a href="#content" class="skip-link">Skip to main content</a>
     <header id="header">
-      <h1><a href="/QRTY/">QRTY</a></h1>
-      <p>
-        QR and barcode decoder. Capture a section of your screen to scan codes,
-        or upload an image.
-      </p>
+      <div class="header-inner">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="https://www.johnsy.com/">www.johnsy.com</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">QRTY</span>
+        </nav>
+        <h1><a href="/QRTY/">QRTY</a></h1>
+        <p class="header-tagline">
+          QR and barcode decoder. Capture a section of your screen to scan
+          codes, or upload an image.
+        </p>
+      </div>
     </header>
 
     <div id="page">
-      <main class="container">
+      <main id="content" role="main" class="container">
         <section class="why-qrty">
           <h2>Why QRTY?</h2>
           <p>
@@ -185,6 +193,26 @@
       </main>
     </div>
 
+    <footer id="footer">
+      <div class="footer-inner">
+        <p>
+          Copyright &copy; 2000–<span id="footer-year"></span>
+          <a rel="author" href="https://www.johnsy.com/about/"
+            ><em><abbr title="Peter Alexander Johns">paj</abbr></em></a
+          >
+          All rights (and some wrongs) reserved.
+        </p>
+        <p>
+          Hosted by <a href="https://github.com">GitHub</a>, built with
+          <a href="https://vitejs.dev">Vite</a>.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("footer-year").textContent =
+        new Date().getFullYear();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
     <script type="module" src="/renderer.ts"></script>

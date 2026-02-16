@@ -16,7 +16,7 @@ Whether you receive QR codes via email, screenshots, or any other image format, 
 - Open or share decoded URLs (with clipboard fallback) or copy any decoded text
 - Fully keyboard accessible
 - Minimal interface that doesn't block QR codes
-- Styled to match www.johnsy.com design
+- Styled to match www.johnsy.com design, including header with breadcrumbs and footer
 - Privacy-focused: all processing happens locally in your browser
 
 ## Setup
