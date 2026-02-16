@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Chromium for asset generation
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Build
         run: pnpm run build
 
@@ -67,6 +70,10 @@ jobs:
         with:
           path: dist
           key: build-${{ hashFiles('**/pnpm-lock.yaml', 'src/**', 'scripts/**', 'vite.config.ts') }}
+
+      - name: Install Chromium for asset generation
+        if: steps.dist-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Build if cache miss
         if: steps.dist-cache.outputs.cache-hit != 'true'
@@ -107,6 +114,10 @@ jobs:
           path: dist
           key: build-${{ hashFiles('**/pnpm-lock.yaml', 'src/**', 'scripts/**', 'vite.config.ts') }}
 
+      - name: Install Chromium for asset generation
+        if: steps.dist-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Build if cache miss
         if: steps.dist-cache.outputs.cache-hit != 'true'
         run: pnpm run build
@@ -142,6 +153,10 @@ jobs:
           path: dist
           key: build-${{ hashFiles('**/pnpm-lock.yaml', 'src/**', 'scripts/**', 'vite.config.ts') }}
 
+      - name: Install Chromium for asset generation
+        if: steps.dist-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Build if cache miss
         if: steps.dist-cache.outputs.cache-hit != 'true'
         run: pnpm run build
@@ -170,6 +185,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium for asset generation
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Build
         run: pnpm run build
