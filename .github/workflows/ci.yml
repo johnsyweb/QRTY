@@ -193,7 +193,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-</think>
-Fixing validate-html: restoring the cache and building only when the cache misses.
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-StrReplace
+
