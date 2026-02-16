@@ -117,7 +117,7 @@ The app uses a unified CI/CD workflow (see `.github/workflows/ci.yml`):
 2. On push to `main`, if all jobs pass, the site is built and deployed to GitHub Pages via the deploy job
 3. Configure the repository’s GitHub Pages source to use the “GitHub Actions” deployment method
 
-**Dependabot**: Weekly dependency and GitHub Actions updates (labels: `dependencies`); minor and patch are grouped. The auto-merge workflow enables merge when CI passes. Require the CI/CD status checks on `main` via branch protection so dependency PRs only merge after success, e.g.:
+**Dependabot**: Weekly dependency and GitHub Actions updates (labels: `dependencies`); minor and patch are grouped. Auto-merge is enabled via repository settings. Require the CI/CD status checks on `main` via branch protection so dependency PRs only merge after success, e.g.:
 
 ```bash
 ./scripts/set-branch-protection.sh
