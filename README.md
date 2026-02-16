@@ -16,7 +16,7 @@ Whether you receive QR codes via email, screenshots, or any other image format, 
 - Open or share decoded URLs (with clipboard fallback) or copy any decoded text
 - Fully keyboard accessible
 - Minimal interface that doesn't block QR codes
-- Styled to match www.johnsy.com design
+- Styled to match www.johnsy.com design, including header with breadcrumbs and footer
 - Privacy-focused: all processing happens locally in your browser
 
 ## Setup
@@ -100,6 +100,7 @@ The application is a web app hosted at `www.johnsy.com/QRTY/`. To use it:
 - `pnpm run generate:qr-code` - Generate QR code image for the site URL
 - `pnpm run generate:all` - Generate all assets
 - `pnpm run build` - Build the site and assets into `dist/` (runs Vite build, copies sitemap and `.nojekyll`, and generates icons, OG image, and QR code)
+- `pnpm run lighthouse` - Run Lighthouse (performance, accessibility, best-practices, SEO) against the preview server; fails if accessibility, best-practices, or SEO score below 100 (used in CI and pre-push)
 
 ## Requirements
 
@@ -110,11 +111,11 @@ The application is a web app hosted at `www.johnsy.com/QRTY/`. To use it:
 
 ### GitHub Pages
 
-The app is set up for automatic deployment to GitHub Pages:
+The app uses a unified CI/CD workflow (see `.github/workflows/ci.yml`):
 
-1. Push to the `main` branch
-2. GitHub Actions will automatically build and deploy to GitHub Pages
-3. Configure GitHub Pages settings to serve from the `src` directory
+1. On pull request or push to `main`, the workflow runs: build (with dist cache), lint-test, Lighthouse (accessibility and related audits), and HTML validation
+2. On push to `main`, if all jobs pass, the site is built and deployed to GitHub Pages via the deploy job
+3. Configure the repository’s GitHub Pages source to use the “GitHub Actions” deployment method
 
 ### Manual Deployment
 

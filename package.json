@@ -18,6 +18,7 @@
     "generate:all": "pnpm run generate:icons && pnpm run generate:og-image && pnpm run generate:qr-code",
     "sync:assets": "mkdir -p assets && cp -f dist/og-image.png assets/og-image.png && cp -f dist/qr-code.png assets/qr-code.png && cp -f dist/icon-512.png assets/icon-512.png && cp -f dist/icon-192.png assets/icon-192.png && cp -f dist/favicon-32x32.png assets/favicon-32x32.png && cp -f dist/favicon-16x16.png assets/favicon-16x16.png && cp -f dist/apple-touch-icon.png assets/apple-touch-icon.png",
     "build": "pnpm run build:scripts && vite build && pnpm run build:assets && pnpm run generate:all && pnpm run sync:assets",
+    "lighthouse": "tsx scripts/run-lighthouse.ts",
     "prepare": "husky"
   },
   "keywords": [
@@ -32,7 +33,7 @@
     "@babel/preset-env": "^7.28.6",
     "@babel/preset-typescript": "^7.28.5",
     "@eslint/js": "^9.39.2",
-    "@lhci/cli": "^0.15.1",
+    "lighthouse": "^13.0.3",
     "@napi-rs/canvas": "^0.1.88",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",
@@ -50,6 +51,7 @@
     "prettier": "^3.8.1",
     "qrcode": "^1.5.4",
     "ts-jest": "^29.4.6",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.53.0",
     "vite": "^7.3.1"
