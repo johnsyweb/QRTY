@@ -1,6 +1,6 @@
----
 version: 2
 updates:
+  # Enable version updates for npm dependencies
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
@@ -23,13 +23,8 @@ updates:
     commit-message:
       prefix: 'chore(deps):'
       include: 'scope'
-    automerge:
-      type: 'pr'
-      update-types:
-        - 'major'
-        - 'minor'
-        - 'patch'
 
+  # Enable version updates for GitHub Actions
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
@@ -39,9 +34,3 @@ updates:
       - 'dependencies'
     commit-message:
       prefix: 'chore(ci):'
-    automerge:
-      type: 'pr'
-      update-types:
-        - 'major'
-        - 'minor'
-        - 'patch'
