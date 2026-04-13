@@ -58,5 +58,10 @@
   },
   "dependencies": {
     "jsqr": "^1.4.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "flatted": ">=3.4.2"
+    }
   }
 }
