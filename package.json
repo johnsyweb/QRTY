@@ -40,7 +40,7 @@
     "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
-    "@zxing/library": "^0.21.3",
+    "@zxing/library": "^0.23.0",
     "eslint": "^9.39.4",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
