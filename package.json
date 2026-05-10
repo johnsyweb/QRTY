@@ -45,7 +45,7 @@
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
     "jest": "^30.3.0",
-    "jest-environment-jsdom": "^30.3.0",
+    "jest-environment-jsdom": "^30.4.1",
     "jsbarcode": "^3.12.3",
     "playwright": "^1.59.1",
     "prettier": "^3.8.3",
