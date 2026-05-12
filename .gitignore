@@ -5,6 +5,10 @@ node_modules/
 dist/
 build/
 
+# Lock files (use pnpm-lock.yaml only)
+package-lock.json
+yarn.lock
+
 # Logs
 *.log
 

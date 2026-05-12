@@ -29,6 +29,10 @@
   ],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "pnpm": ">=10.0.0",
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.29.5",
     "@babel/preset-typescript": "^7.28.5",
