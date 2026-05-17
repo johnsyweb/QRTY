@@ -51,7 +51,7 @@
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "jsbarcode": "^3.12.3",
-    "playwright": "^1.59.1",
+    "playwright": "^1.60.0",
     "prettier": "^3.8.3",
     "qrcode": "^1.5.4",
     "ts-jest": "^29.4.9",
